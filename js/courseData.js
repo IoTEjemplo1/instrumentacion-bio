@@ -869,7 +869,7 @@ export const courseData = {
         },
         {
           id: "clase-03",
-          isEnabled: false,
+          isEnabled: true,
           number: 3,
           title: "Análisis de Señales en Tiempo y Frecuencia",
           duration: "4 horas",
@@ -1040,7 +1040,7 @@ export const courseData = {
         },
         {
           id: "clase-04",
-          isEnabled: false,
+          isEnabled: true,
           number: 4,
           title: "Filtros Pasivos",
           duration: "4 horas",
