@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio virtual RLC</title>
+<style>
+:root{--b:#0b3b66;--b2:#17679e;--g:#d6a84b;--i:#1f2937;--m:#667085}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#eef3f8;color:var(--i)}
+.app{max-width:1240px;margin:auto;padding:22px}.hero{background:linear-gradient(135deg,var(--b),var(--b2));color:#fff;padding:24px 28px;border-radius:22px}.hero h1{margin:0 0 8px}.hero p{margin:0;line-height:1.5}
+.grid{display:grid;grid-template-columns:350px 1fr;gap:18px;margin-top:18px}.panel{background:#fff;border:1px solid #dbe4ee;border-radius:20px;padding:19px;box-shadow:0 10px 25px #1f293710}
+h2{margin:0 0 16px;color:var(--b);font-size:1.15rem}.control{margin-bottom:15px}label{display:flex;justify-content:space-between;font-weight:700;font-size:.92rem;margin-bottom:7px}.value{color:var(--b)}
+input[type=range]{width:100%;accent-color:var(--b)}.modes{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.modes button{border:1px solid #c9d5e1;background:#fff;border-radius:11px;padding:10px 7px;font-weight:800;cursor:pointer}.modes button.active{background:var(--b);color:#fff;border-color:var(--b)}
+.views{display:grid;grid-template-columns:1.55fr 1fr;gap:13px}.box{border:1px solid #d9e4ee;border-radius:17px;background:#fbfdff;overflow:hidden}.box h3{margin:0;padding:11px 13px;background:#f4f8fb;color:var(--b);font-size:.93rem;border-bottom:1px solid #d9e4ee}
+canvas{width:100%;height:300px;display:block}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.metric{background:#f7fafc;border:1px solid #dce6ef;border-radius:14px;padding:12px}.metric span{display:block;color:var(--m);font-size:.77rem;margin-bottom:5px}.metric strong{color:var(--b)}
+.note,.eq,.challenge{margin-top:14px;border-radius:14px;padding:13px;line-height:1.5}.note{background:#eaf5ff;border:1px solid #bfdcf1}.eq{background:#f7fafc;border:1px solid #dce6ef;font-family:Georgia,serif}.challenge{background:#fff9eb;border:1px solid #eedaa5}
+@media(max-width:970px){.grid{grid-template-columns:1fr}.views{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.app{padding:12px}.modes{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body><main class="app">
+<section class="hero"><h1>Laboratorio virtual de componentes R, L y C</h1><p>Compara voltaje y corriente, observa el desfase, analiza fasores y descubre cómo la frecuencia modifica la reactancia, impedancia y resonancia.</p></section>
+<section class="grid"><aside class="panel"><h2>Configuración</h2>
+<div class="control"><label>Tipo de circuito</label><div class="modes">
+<button data-m="R" class="active">R</button><button data-m="L">L</button><button data-m="C">C</button><button data-m="RL">RL</button>
+<button data-m="RC">RC</button><button data-m="LC">LC</button><button data-m="RLC">RLC</button></div></div>
+<div class="control"><label>Voltaje RMS <span class="value" id="vv">10,0 V</span></label><input id="v" type="range" min="1" max="24" step=".5" value="10"></div>
+<div class="control"><label>Frecuencia <span class="value" id="fv">60 Hz</span></label><input id="f" type="range" min="1" max="1000" step="1" value="60"></div>
+<div class="control"><label>Resistencia R <span class="value" id="rv">100 Ω</span></label><input id="r" type="range" min="1" max="1000" step="1" value="100"></div>
+<div class="control"><label>Inductancia L <span class="value" id="lv">100 mH</span></label><input id="l" type="range" min="1" max="500" step="1" value="100"></div>
+<div class="control"><label>Capacitancia C <span class="value" id="cvv">47 µF</span></label><input id="c" type="range" min="1" max="500" step="1" value="47"></div>
+<div class="challenge"><b>Reto:</b> selecciona LC o RLC y mueve la frecuencia hasta encontrar X<sub>L</sub> ≈ X<sub>C</sub>. ¿Qué ocurre con la impedancia y la corriente?</div>
+</aside>
+<section class="panel"><h2>Respuesta del circuito</h2>
+<div class="views"><div class="box"><h3>Osciloscopio: voltaje y corriente normalizada</h3><canvas id="scope"></canvas></div><div class="box"><h3>Diagrama fasorial</h3><canvas id="phasor"></canvas></div></div>
+<div class="metrics">
+<div class="metric"><span>Reactancia inductiva XL</span><strong id="xl"></strong></div><div class="metric"><span>Reactancia capacitiva XC</span><strong id="xc"></strong></div>
+<div class="metric"><span>Impedancia |Z|</span><strong id="z"></strong></div><div class="metric"><span>Corriente RMS</span><strong id="i"></strong></div>
+<div class="metric"><span>Ángulo de fase</span><strong id="phi"></strong></div><div class="metric"><span>Factor de potencia</span><strong id="pf"></strong></div>
+<div class="metric"><span>Frecuencia de resonancia</span><strong id="f0"></strong></div><div class="metric"><span>Comportamiento</span><strong id="beh"></strong></div>
+</div><div class="note" id="note"></div><div class="eq" id="eq"></div></section></section></main>
+<script>
+const $=x=>document.getElementById(x);let mode='R',t=0,last=performance.now();const fmt=(n,d=2)=>Number(n).toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(q=>q.classList.toggle('active',q===b));update()});
+['v','f','r','l','c'].forEach(k=>$(k).oninput=update);const s=$('scope'),p=$('phasor'),sx=s.getContext('2d'),px=p.getContext('2d');
+function size(cv,x){let r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;x.setTransform(d,0,0,d,0,0)}function sizes(){size(s,sx);size(p,px)}addEventListener('resize',sizes);sizes();
+function P(){let V=+$('v').value,f=+$('f').value,R=+$('r').value,L=+$('l').value/1000,C=+$('c').value/1e6,w=2*Math.PI*f,uR=mode.includes('R'),uL=mode.includes('L'),uC=mode.includes('C'),Rv=uR?R:0,XL=uL?w*L:0,XC=uC?1/(w*C):0,X=XL-XC,Z=Math.hypot(Rv,X),I=Z>1e-9?V/Z:Infinity,phi=Math.atan2(X,Rv||0),pf=Math.cos(phi),f0=uL&&uC?1/(2*Math.PI*Math.sqrt(L*C)):null;return{V,f,R,L,C,w,uR,uL,uC,Rv,XL,XC,X,Z,I,phi,pf,f0}}
+function ohm(n){return n>=1000?fmt(n/1000)+' kΩ':fmt(n)+' Ω'}
+function update(){let q=P();$('vv').textContent=fmt(q.V,1)+' V';$('fv').textContent=fmt(q.f,0)+' Hz';$('rv').textContent=fmt(q.R,0)+' Ω';$('lv').textContent=fmt(q.L*1000,0)+' mH';$('cvv').textContent=fmt(q.C*1e6,0)+' µF';
+$('xl').textContent=q.uL?ohm(q.XL):'No aplica';$('xc').textContent=q.uC?ohm(q.XC):'No aplica';$('z').textContent=ohm(q.Z);$('i').textContent=isFinite(q.I)?(q.I<1?fmt(q.I*1000)+' mA':fmt(q.I)+' A'):'Muy alta';
+$('phi').textContent=fmt(q.phi*180/Math.PI,1)+'°';$('pf').textContent=fmt(Math.abs(q.pf));$('f0').textContent=q.f0?fmt(q.f0)+' Hz':'No aplica';let b=Math.abs(q.phi)<.03?'Resistivo':q.phi>0?'Inductivo':'Capacitivo';$('beh').textContent=b;
+let n=mode==='R'?'En una resistencia ideal, voltaje y corriente están en fase.':mode==='L'?'En un inductor ideal, la corriente se atrasa 90° respecto al voltaje. XL aumenta con la frecuencia.':mode==='C'?'En un capacitor ideal, la corriente se adelanta 90° respecto al voltaje. XC disminuye con la frecuencia.':'En circuitos combinados, el desfase depende del balance entre XL y XC. En resonancia sus efectos se compensan.';
+if(q.f0&&Math.abs(q.f-q.f0)/q.f0<.03)n+=' Estás muy cerca de la resonancia.';$('note').textContent=n;
+$('eq').innerHTML='<b>Relaciones principales</b><br>X<sub>L</sub> = 2πfL = '+fmt(q.XL)+' Ω<br>X<sub>C</sub> = 1/(2πfC) = '+fmt(q.XC)+' Ω<br>|Z| = √(R² + (X<sub>L</sub>−X<sub>C</sub>)²) = '+fmt(q.Z)+' Ω<br>I = V/|Z| = '+(isFinite(q.I)?fmt(q.I,4)+' A':'muy alta')}
+function axes(x,w,h){x.clearRect(0,0,w,h);x.fillStyle='#fbfdff';x.fillRect(0,0,w,h);x.strokeStyle='#dce7f0';for(let i=0;i<=10;i++){let a=i*w/10;x.beginPath();x.moveTo(a,0);x.lineTo(a,h);x.stroke()}for(let i=0;i<=6;i++){let a=i*h/6;x.beginPath();x.moveTo(0,a);x.lineTo(w,a);x.stroke()}x.strokeStyle='#60758b';x.beginPath();x.moveTo(0,h/2);x.lineTo(w,h/2);x.stroke()}
+function draw(){let now=performance.now(),dt=(now-last)/1000;last=now;t+=dt;let q=P(),w=s.clientWidth,h=s.clientHeight;axes(sx,w,h);
+sx.lineWidth=3;sx.strokeStyle='#0b3b66';sx.beginPath();for(let a=0;a<w;a++){let ang=2*Math.PI*2.5*a/w+t*2,y=h/2-Math.sin(ang)*h*.32;a?sx.lineTo(a,y):sx.moveTo(a,y)}sx.stroke();
+sx.strokeStyle='#d6a84b';sx.beginPath();for(let a=0;a<w;a++){let ang=2*Math.PI*2.5*a/w+t*2-q.phi,y=h/2-Math.sin(ang)*h*.26;a?sx.lineTo(a,y):sx.moveTo(a,y)}sx.stroke();sx.fillStyle='#0b3b66';sx.fillText('Voltaje',12,18);sx.fillStyle='#9a6e00';sx.fillText('Corriente',76,18);
+let pw=p.clientWidth,hh=p.clientHeight,cx=pw/2,cy=hh/2,R=Math.min(pw,hh)*.32;px.clearRect(0,0,pw,hh);px.fillStyle='#fbfdff';px.fillRect(0,0,pw,hh);px.strokeStyle='#d5e0ea';px.beginPath();px.arc(cx,cy,R,0,Math.PI*2);px.stroke();px.strokeStyle='#60758b';px.beginPath();px.moveTo(cx-R-15,cy);px.lineTo(cx+R+15,cy);px.moveTo(cx,cy-R-15);px.lineTo(cx,cy+R+15);px.stroke();
+function ar(ang,len,col,lab){px.strokeStyle=col;px.fillStyle=col;px.lineWidth=4;px.beginPath();px.moveTo(cx,cy);px.lineTo(cx+len*Math.cos(ang),cy-len*Math.sin(ang));px.stroke();let ex=cx+len*Math.cos(ang),ey=cy-len*Math.sin(ang);px.beginPath();px.arc(ex,ey,5,0,7);px.fill();px.fillText(lab,ex+7,ey-6)}
+ar(0,R,'#0b3b66','V');ar(-q.phi,R*.85,'#d6a84b','I');px.fillStyle='#526375';px.fillText('φ = '+fmt(q.phi*180/Math.PI,1)+'°',12,20);requestAnimationFrame(draw)}
+update();draw();
+</script></body></html>

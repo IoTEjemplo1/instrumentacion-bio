@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulador de Cargas y Campo Eléctrico</title>
+<style>
+:root{--bg:#07111f;--panel:#101d2e;--panel2:#17263b;--ink:#eef6ff;--muted:#9fb2c8;--line:#2b405a;--positive:#ff4b3e;--negative:#17b7e8;--sensor:#ffe83b;--accent:#63a6ff;--ok:#44d17a;--warn:#ffbf47;--danger:#b42318;--shadow:0 16px 36px rgba(0,0,0,.3)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;overflow:hidden}header{padding:18px clamp(16px,4vw,32px);background:linear-gradient(135deg,#0a2e5c,#154f91);color:#fff;flex:0 0 auto}header h1{margin:.25rem 0;font-size:clamp(1.5rem,3vw,2.2rem)}header p{margin:0;max-width:980px;opacity:.92;font-size:0.9rem}.app{display:grid;grid-template-columns:minmax(0,1fr) 350px;flex:1;height:0}.stage-wrap{position:relative;min-width:0;background:#02070d}canvas{display:block;width:100%;height:100%;touch-action:none}.topbar{position:absolute;left:14px;top:14px;display:flex;gap:8px;flex-wrap:wrap;padding:9px;background:rgba(9,20,35,.86);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(9px);box-shadow:var(--shadow)}button,select,input{font:inherit}button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;padding:9px 12px;font-weight:750;cursor:pointer}button:hover{transform:translateY(-1px)}button.primary{background:var(--accent);color:#05101d;border-color:var(--accent)}button.danger{background:#8b2430;border-color:#a93846}button.active{outline:2px solid var(--accent)}.side{scrollbar-width:thin;background:linear-gradient(180deg,var(--panel),#0c1726);border-left:1px solid var(--line);padding:16px;overflow:auto}h1{font-size:1.25rem;margin:0 0 4px}.sub{font-size:.86rem;color:var(--muted)}.card{margin-top:14px;padding:13px;border-radius:14px;background:var(--panel2);border:1px solid var(--line)}.card h2{font-size:.95rem;margin:0 0 10px}.row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:9px 0}.small{font-size:.82rem;color:var(--muted)}input[type=range]{width:100%;accent-color:var(--accent)}input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px}.palette{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tool{display:grid;place-items:center;gap:5px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:#0d1929;cursor:pointer;user-select:none}.tool strong{font-size:.78rem}.badge{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:1.45rem;font-weight:900;color:white;box-shadow:0 5px 12px rgba(0,0,0,.3)}.pos{background:var(--positive)}.neg{background:var(--negative)}.sen{background:var(--sensor);color:#182130}.legend{display:grid;gap:7px;font-size:.82rem}.legend div{display:flex;align-items:center;gap:8px}.dot{width:12px;height:12px;border-radius:50%}.value{font-weight:800;color:#89c0ff;font-variant-numeric:tabular-nums}.readout{display:grid;grid-template-columns:1fr 1fr;gap:8px}.metric{background:#0b1625;border:1px solid var(--line);border-radius:10px;padding:9px}.metric span{display:block;font-size:.72rem;color:var(--muted)}.metric strong{font-size:.95rem}.help{position:absolute;left:14px;bottom:14px;max-width:620px;padding:10px 12px;background:rgba(9,20,35,.86);border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:.82rem;backdrop-filter:blur(8px)}@media(max-width:900px){body{overflow:auto}.app{grid-template-columns:1fr;height:auto}.stage-wrap{height:68vh}.side{scrollbar-width:thin;border-left:none;border-top:1px solid var(--line)}}
+
+
+.global-tooltip{position:fixed;background:var(--panel2);color:var(--ink);border:1px solid var(--accent);padding:10px 14px;border-radius:8px;font-size:0.85rem;max-width:280px;pointer-events:none;opacity:0;transition:opacity 0.15s ease;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.5);line-height:1.4}
+.global-tooltip.visible{opacity:1}
+.info-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#000;font-weight:bold;font-size:11px;cursor:help;margin-left:6px;position:relative}
+
+</style>
+</head>
+<body>
+
+<header><div style="font-size:.78rem;letter-spacing:.13em;text-transform:uppercase;opacity:.8">Bioinstrumentación · Fundamentos Físicos</div><h1>⚡ Laboratorio de Cargas y Campo Eléctrico</h1><p>Construya configuraciones de cargas, mida el potencial (Voltaje) y observe la fuerza electromotriz responsable de generar corriente eléctrica.</p></header>
+
+<div class="app">
+  <section class="stage-wrap">
+    <canvas id="sim" aria-label="Simulador interactivo de cargas eléctricas"></canvas>
+    <div class="topbar">
+      <button id="play" class="primary">▶ Simular movimiento</button><button id="pause">⏸ Pausar</button><button id="reset">↻ Reiniciar</button><button id="clear" class="danger">Limpiar</button>
+    </div>
+    <div class="help">Arrastra una carga desde el panel o haz clic en una herramienta y luego en el espacio. Las cargas pueden moverse por la fuerza eléctrica cuando activas la simulación. También puedes arrastrarlas directamente para reorganizar el sistema.</div>
+  </section>
+  <aside class="side">
+    
+    <div class="card"><h2>Agregar elementos</h2><div class="palette">
+      <div class="tool" data-tool="positive"><div class="badge pos">+</div><strong>+1 nC</strong></div>
+      <div class="tool" data-tool="negative"><div class="badge neg">−</div><strong>−1 nC</strong></div>
+      <div class="tool" data-tool="sensor"><div class="badge sen">•</div><strong>Sensor</strong></div>
+    </div><p class="small">Haz doble clic sobre un elemento para eliminarlo.</p></div>
+    <div class="card"><h2>Visualización</h2>
+      <div class="row"><label>Campo eléctrico</label><input id="fieldOn" type="checkbox" checked></div>
+      <div class="row"><label>Solo dirección</label><input id="dirOnly" type="checkbox"></div>
+      <div class="row"><label>Potencial eléctrico</label><input id="potentialOn" type="checkbox"></div>
+      <div class="row"><label>Líneas de campo</label><input id="linesOn" type="checkbox"></div>
+      <div class="row"><label>Valores</label><input id="valuesOn" type="checkbox"></div>
+      <div class="row"><label>Cuadrícula</label><input id="gridOn" type="checkbox"></div>
+      <div class="row"><label>Vectores sobre cargas</label><input id="forceOn" type="checkbox" checked></div>
+    </div>
+    <div class="card"><h2>Parámetros físicos</h2>
+      <div class="row"><label>Escala de campo<span class="info-btn" data-tooltip="Amplifica visualmente los vectores del campo para ver campos débiles con mayor claridad.">i</span></label><span id="fieldScaleV" class="value"></span></div><input id="fieldScale" type="range" min="0.2" max="3" step="0.1" value="1">
+      <div class="row"><label>Velocidad simulación<span class="info-btn" data-tooltip="Qué tan rápido se mueven las cargas bajo la influencia de la fuerza eléctrica (F=qE).">i</span></label><span id="speedV" class="value"></span></div><input id="speed" type="range" min="0.1" max="2" step="0.1" value="0.7">
+      <div class="row"><label>Amortiguamiento<span class="info-btn" data-tooltip="Simula fricción o resistencia. Si es alto (0.999), las cargas oscilan eternamente. Si es bajo, se detienen rápido.">i</span></label><span id="dampingV" class="value"></span></div><input id="damping" type="range" min="0.85" max="0.999" step="0.001" value="0.985">
+      <div class="row"><label>Fijar cargas<span class="info-btn" data-tooltip="Congela todas las cargas en su posición actual, ideal para medir el campo o potencial estático.">i</span></label><input id="fixedCharges" type="checkbox"></div>
+      <p class="small">Con “Fijar cargas” activo, las cargas no se desplazan, pero el campo continúa actualizándose.</p>
+    </div>
+    <div class="card"><h2>Lectura del sensor</h2><div class="readout">
+      <div class="metric"><span>Potencial</span><strong id="sensorV">—</strong></div><div class="metric"><span>Campo |E|</span><strong id="sensorE">—</strong></div><div class="metric"><span>Ex</span><strong id="sensorEx">—</strong></div><div class="metric"><span>Ey</span><strong id="sensorEy">—</strong></div>
+    </div></div>
+    
+<div class="card" style="border-color:var(--accent)">
+  <h2 style="color:var(--accent);margin-bottom:6px">🧪 Misiones de aprendizaje</h2>
+  <div style="font-weight:800;color:var(--ink);margin-bottom:6px;font-size:0.95rem" id="missionT">Misión 1</div>
+  <div style="font-size:0.86rem;line-height:1.4;color:var(--muted)" id="missionD">Descripción</div>
+  <div class="row" style="margin-top:12px;grid-template-columns:1fr auto">
+    <button id="check" class="primary" style="width:100%;padding:7px;font-size:0.9rem">Verificar misión</button>
+    <button id="next" style="padding:7px 12px">▶</button>
+  </div>
+  <div id="feedback" style="min-height:36px;margin-top:9px;font-weight:700;font-size:0.85rem"></div>
+</div>
+
+  </aside>
+</div>
+<script>
+const canvas=document.getElementById('sim'),ctx=canvas.getContext('2d'),$=id=>document.getElementById(id);let W=0,H=0,dpr=1,running=false,selectedTool=null,drag=null,last=performance.now();const K=8.9875517923e9,charges=[],sensors=[];
+function resize(){const r=canvas.getBoundingClientRect();dpr=devicePixelRatio||1;canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);W=r.width;H=r.height}window.addEventListener('resize',resize);resize();
+function addCharge(x,y,q){charges.push({x,y,q,vx:0,vy:0,r:18,mass:1,fixed:false})}function addSensor(x,y){sensors.push({x,y,r:10})}
+addCharge(W*.34,H*.5,1e-9);addCharge(W*.66,H*.5,-1e-9);addSensor(W*.5,H*.68);
+function fieldAt(x,y,exclude=null){let ex=0,ey=0,v=0;for(const c of charges){if(c===exclude)continue;let dx=x-c.x,dy=y-c.y,r2=Math.max(dx*dx+dy*dy,18*18),r=Math.sqrt(r2),ef=K*c.q/r2;ex+=ef*dx/r;ey+=ef*dy/r;v+=K*c.q/r}return{ex,ey,e:Math.hypot(ex,ey),v}}
+function potentialColor(v){const s=Math.max(-1,Math.min(1,v/4));return s>=0?`rgba(255,75,62,${.04+.16*s})`:`rgba(23,183,232,${.04+.16*(-s)})`}
+function drawGrid(){ctx.save();ctx.strokeStyle='rgba(120,160,200,.18)';ctx.lineWidth=1;for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.restore()}
+function drawPotential(){for(let y=0;y<H;y+=28)for(let x=0;x<W;x+=28){const f=fieldAt(x+14,y+14);ctx.fillStyle=potentialColor(f.v);ctx.fillRect(x,y,28,28)}}
+function arrow(x,y,dx,dy,color='rgba(255,255,255,.8)',scale=1){const len=Math.hypot(dx,dy);if(!len)return;const ux=dx/len,uy=dy/len,L=scale,h=5;ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(x-L*.5*ux,y-L*.5*uy);ctx.lineTo(x+L*.5*ux,y+L*.5*uy);ctx.stroke();const tx=x+L*.5*ux,ty=y+L*.5*uy;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx-h*ux+h*.7*uy,ty-h*uy-h*.7*ux);ctx.lineTo(tx-h*ux-h*.7*uy,ty-h*uy+h*.7*ux);ctx.closePath();ctx.fill()}
+function drawField(){const fs=+$('fieldScale').value;for(let y=30;y<H;y+=55)for(let x=30;x<W;x+=55){const f=fieldAt(x,y);if(f.e<1e-12)continue;const mag=$('dirOnly').checked?19:Math.min(32,6+Math.log10(1+f.e*1000)*7*fs),alpha=Math.min(.95,.18+.16*Math.log10(1+f.e*1000));arrow(x,y,f.ex,f.ey,`rgba(255,255,255,${alpha})`,mag)}}
+function drawFieldLines(){if(!charges.length)return;ctx.save();ctx.lineWidth=1;ctx.strokeStyle='rgba(255,238,120,.35)';for(const c of charges.filter(c=>c.q>0))for(let a=0;a<Math.PI*2;a+=Math.PI/8){let x=c.x+Math.cos(a)*c.r*1.4,y=c.y+Math.sin(a)*c.r*1.4;ctx.beginPath();ctx.moveTo(x,y);for(let i=0;i<240;i++){const f=fieldAt(x,y);if(f.e<1e-10)break;x+=f.ex/f.e*5;y+=f.ey/f.e*5;ctx.lineTo(x,y);if(x<0||x>W||y<0||y>H)break;let hit=false;for(const q of charges)if(Math.hypot(x-q.x,y-q.y)<q.r){hit=true;break}if(hit)break}ctx.stroke()}ctx.restore()}
+function drawCharge(c){ctx.save();ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=12;ctx.fillStyle=c.q>0?'#ff4b3e':'#17b7e8';ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='white';ctx.font='900 25px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.q>0?'+':'−',c.x,c.y-1);if($('valuesOn').checked){ctx.font='700 12px system-ui';ctx.fillText(c.q>0?'+1 nC':'−1 nC',c.x,c.y+c.r+15)}if($('forceOn').checked){const f=fieldAt(c.x,c.y,c),fx=f.ex*c.q,fy=f.ey*c.q;if(Math.hypot(fx,fy)>1e-18)arrow(c.x,c.y,fx,fy,'#ffe83b',34)}ctx.restore()}
+function drawSensor(s){const f=fieldAt(s.x,s.y);ctx.save();ctx.fillStyle='#ffe83b';ctx.strokeStyle='#213044';ctx.lineWidth=3;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.stroke();arrow(s.x,s.y,f.ex,f.ey,'#ffe83b',42);if($('valuesOn').checked){ctx.fillStyle='white';ctx.font='700 12px system-ui';ctx.textAlign='center';ctx.fillText(`${f.v.toFixed(2)} V`,s.x,s.y+26)}ctx.restore()}
+function updateReadout(){const s=sensors[0];if(!s){['sensorV','sensorE','sensorEx','sensorEy'].forEach(id=>$(id).textContent='—');return}const f=fieldAt(s.x,s.y);$('sensorV').textContent=f.v.toFixed(3)+' V';$('sensorE').textContent=f.e.toExponential(2)+' N/C';$('sensorEx').textContent=f.ex.toExponential(2);$('sensorEy').textContent=f.ey.toExponential(2)}
+function simulate(dt){if(!running||$('fixedCharges').checked)return;const speed=+$('speed').value,damp=+$('damping').value,acc=[];for(const c of charges){const f=fieldAt(c.x,c.y,c),qSign=c.q>0?1:-1;acc.push({ax:qSign*f.ex*90000,ay:qSign*f.ey*90000})}charges.forEach((c,i)=>{if(c.fixed||drag===c)return;c.vx=(c.vx+acc[i].ax*dt*speed)*Math.pow(damp,dt*60);c.vy=(c.vy+acc[i].ay*dt*speed)*Math.pow(damp,dt*60);const vmax=180;c.vx=Math.max(-vmax,Math.min(vmax,c.vx));c.vy=Math.max(-vmax,Math.min(vmax,c.vy));c.x+=c.vx*dt;c.y+=c.vy*dt;if(c.x<c.r){c.x=c.r;c.vx*=-.7}if(c.x>W-c.r){c.x=W-c.r;c.vx*=-.7}if(c.y<c.r){c.y=c.r;c.vy*=-.7}if(c.y>H-c.r){c.y=H-c.r;c.vy*=-.7}})}
+function frame(now){const dt=Math.min(.03,(now-last)/1000);last=now;simulate(dt);ctx.clearRect(0,0,W,H);ctx.fillStyle='#02070d';ctx.fillRect(0,0,W,H);if($('potentialOn').checked)drawPotential();if($('gridOn').checked)drawGrid();if($('fieldOn').checked)drawField();if($('linesOn').checked)drawFieldLines();charges.forEach(drawCharge);sensors.forEach(drawSensor);updateReadout();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+function pointerPos(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}canvas.addEventListener('pointerdown',e=>{const p=pointerPos(e);for(const s of sensors)if(Math.hypot(p.x-s.x,p.y-s.y)<20){drag=s;canvas.setPointerCapture(e.pointerId);return}for(let i=charges.length-1;i>=0;i--){const c=charges[i];if(Math.hypot(p.x-c.x,p.y-c.y)<c.r+8){drag=c;c.vx=c.vy=0;canvas.setPointerCapture(e.pointerId);return}}if(selectedTool){if(selectedTool==='positive')addCharge(p.x,p.y,1e-9);if(selectedTool==='negative')addCharge(p.x,p.y,-1e-9);if(selectedTool==='sensor')addSensor(p.x,p.y);selectedTool=null;document.querySelectorAll('.tool').forEach(x=>x.style.outline='none');}});canvas.addEventListener('pointermove',e=>{if(!drag)return;const p=pointerPos(e);drag.x=p.x;drag.y=p.y;if('vx'in drag){drag.vx=0;drag.vy=0}});canvas.addEventListener('pointerup',e=>{drag=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}});canvas.addEventListener('dblclick',e=>{const p=pointerPos(e);for(let i=charges.length-1;i>=0;i--)if(Math.hypot(p.x-charges[i].x,p.y-charges[i].y)<charges[i].r+8){charges.splice(i,1);return}for(let i=sensors.length-1;i>=0;i--)if(Math.hypot(p.x-sensors[i].x,p.y-sensors[i].y)<18){sensors.splice(i,1);return}});
+document.querySelectorAll('.tool').forEach(t=>t.onclick=()=>{selectedTool=t.dataset.tool;document.querySelectorAll('.tool').forEach(x=>x.style.outline=x===t?'2px solid var(--accent)':'none')});$('play').onclick=()=>{
+  if($('fixedCharges').checked) {
+    alert("¡Atención! Tienes activada la opción 'Fijar cargas', por lo que nada se moverá. Por favor, desmarca esa casilla en el panel lateral.");
+    return;
+  }
+  if(charges.length <= 1) {
+    alert("¡Atención! Solo tienes una carga en la pantalla. Para que exista movimiento electromagnético, necesitas al menos DOS cargas para que se atraigan o repelan (Fuerza = Masa x Aceleración).");
+    return;
+  }
+  running=true;
+  $('play').classList.add('active');
+  $('pause').classList.remove('active');
+};$('pause').onclick=()=>{running=false;$('pause').classList.add('active');$('play').classList.remove('active')};$('clear').onclick=()=>{charges.length=0;sensors.length=0};$('reset').onclick=()=>{charges.length=0;sensors.length=0;addCharge(W*.34,H*.5,1e-9);addCharge(W*.66,H*.5,-1e-9);addSensor(W*.5,H*.68);running=false};function labels(){$('fieldScaleV').textContent=(+$('fieldScale').value).toFixed(1)+'×';$('speedV').textContent=(+$('speed').value).toFixed(1)+'×';$('dampingV').textContent=(+$('damping').value).toFixed(3)}['fieldScale','speed','damping'].forEach(id=>$(id).addEventListener('input',labels));labels();
+
+
+// --- TOOLTIPS ---
+const tooltip = document.createElement('div');
+tooltip.className = 'global-tooltip';
+document.body.appendChild(tooltip);
+document.addEventListener('mouseover', (e) => {
+  const target = e.target.closest('[data-tooltip]');
+  if (target) {
+    tooltip.innerHTML = target.getAttribute('data-tooltip');
+    tooltip.classList.add('visible');
+  }
+});
+document.addEventListener('mousemove', (e) => {
+  if (tooltip.classList.contains('visible')) {
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top = (e.clientY + 15) + 'px';
+  }
+});
+document.addEventListener('mouseout', (e) => {
+  if (e.target.closest('[data-tooltip]')) {
+    tooltip.classList.remove('visible');
+  }
+});
+
+// --- MISIONES DE APRENDIZAJE ---
+const misiones = [
+  ['Misión 1 — El origen del Voltaje', 'Coloca solo UNA carga positiva (+). Arrastra el <b>Sensor</b> lejos y cerca de ella. ¿Qué le pasa al Voltaje (Potencial)?<br><br><span style="color:var(--accent)">💡 <b>Pista:</b> Aléjate a más de 300px (verifica el valor del Sensor). Entenderás por qué el voltaje cae con la distancia.</span>'],
+  ['Misión 2 — El Dipolo Eléctrico', 'El corazón humano actúa como un dipolo. Limpia la pantalla, pon una carga <b>+</b> y una <b>-</b> separadas por unos centímetros. Activa las <b>Líneas de campo</b>.<br><br><span style="color:var(--accent)">💡 <b>Pista:</b> Observa cómo la energía fluye del polo positivo al negativo.</span>'],
+  ['Misión 3 — Fuerza Electromotriz', 'Activa "Fijar cargas". Pon 2 cargas <b>-</b> a la izquierda (polo negativo de una batería). Pon una carga <b>+</b> en el centro y quita "Fijar cargas".<br><br><span style="color:var(--accent)">💡 <b>Pista:</b> La repulsión empuja la carga central simulando una Corriente DC. Haz clic en ▶ Simular.</span>']
+];
+let currentMission = 0;
+function updateMission(){
+  $('missionT').textContent = misiones[currentMission][0];
+  $('missionD').innerHTML = misiones[currentMission][1];
+  $('feedback').textContent = '';
+}
+$('next').onclick = () => { currentMission = (currentMission + 1) % misiones.length; updateMission(); };
+$('check').onclick = () => {
+  let ok = false;
+  let msg = '';
+  const s = sensors[0];
+  if(currentMission === 0){
+    const pos = charges.filter(c => c.q > 0).length;
+    const neg = charges.filter(c => c.q < 0).length;
+    ok = pos === 1 && neg === 0 && s && fieldAt(s.x, s.y).v < 2.0;
+    msg = '❌ Aún no. <b>Paso a paso:</b><br>1. Presiona "Limpiar".<br>2. Agrega una carga (+).<br>3. Agrega un "Sensor" y arrástralo lejos de la carga hasta que la lectura "Potencial" baje de 2.0 V.';
+  } else if(currentMission === 1){
+    const pos = charges.filter(c => c.q > 0).length;
+    const neg = charges.filter(c => c.q < 0).length;
+    ok = pos === 1 && neg === 1 && $('linesOn').checked;
+    msg = '❌ Aún no. <b>Paso a paso:</b><br>1. Limpia la pantalla.<br>2. Pon una carga (+).<br>3. Pon una carga (-) a unos centímetros.<br>4. Activa la casilla "Líneas de campo" en el panel derecho.';
+  } else if(currentMission === 2){
+    const neg = charges.filter(c => c.q < 0).length;
+    ok = neg >= 2 && running;
+    msg = '❌ Aún no. <b>Paso a paso:</b><br>1. Activa la casilla "Fijar cargas".<br>2. Coloca dos o tres cargas (-) a la izquierda.<br>3. Desactiva "Fijar cargas".<br>4. Pon una carga (+) en el centro y presiona el botón azul "▶ Simular movimiento".';
+  }
+  
+  $('feedback').style.color = ok ? 'var(--ok)' : 'var(--danger)';
+  $('feedback').innerHTML = ok ? '✅ <b>¡Misión superada!</b> Has comprobado este principio.' : msg;
+};
+updateMission();
+// ---------------------------------
+
+</script>
+</body>
+</html>

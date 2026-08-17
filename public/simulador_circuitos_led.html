@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de circuitos con LED</title>
+  <style>
+    :root{
+      --javeriana-blue:#0b3b66;
+      --javeriana-gold:#d6a84b;
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --panel:#ffffff;
+      --bg:#eef3f8;
+      --line:#23384d;
+      --danger:#b42318;
+      --ok:#147a42;
+      --warning:#a15c00;
+      --soft:#f7fafc;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:linear-gradient(135deg,#eef3f8,#f8fbff);
+      color:var(--ink);
+    }
+
+    .app{
+      max-width:1180px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,var(--javeriana-blue),#165f98);
+      color:white;
+      border-radius:22px;
+      padding:24px 28px;
+      box-shadow:0 14px 32px rgba(11,59,102,.18);
+      margin-bottom:20px;
+    }
+
+    .hero h1{
+      margin:0 0 8px;
+      font-size:clamp(1.55rem,3vw,2.4rem);
+    }
+
+    .hero p{
+      margin:0;
+      max-width:850px;
+      line-height:1.55;
+      opacity:.94;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:350px 1fr;
+      gap:20px;
+    }
+
+    .panel{
+      background:var(--panel);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:0 10px 26px rgba(31,41,55,.08);
+      border:1px solid #dbe4ee;
+    }
+
+    .panel h2{
+      margin:0 0 16px;
+      font-size:1.15rem;
+      color:var(--javeriana-blue);
+    }
+
+    .control{
+      margin-bottom:17px;
+    }
+
+    label{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      font-weight:700;
+      margin-bottom:7px;
+      font-size:.94rem;
+    }
+
+    .value{
+      color:var(--javeriana-blue);
+      font-variant-numeric:tabular-nums;
+    }
+
+    input[type="range"]{
+      width:100%;
+      accent-color:var(--javeriana-blue);
+    }
+
+    select,button{
+      width:100%;
+      border:1px solid #c8d4e1;
+      border-radius:12px;
+      padding:11px 12px;
+      font-size:.96rem;
+      background:white;
+      color:var(--ink);
+    }
+
+    .segmented{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .segmented button{
+      cursor:pointer;
+      font-weight:800;
+      transition:.2s ease;
+    }
+
+    .segmented button.active{
+      background:var(--javeriana-blue);
+      color:white;
+      border-color:var(--javeriana-blue);
+    }
+
+    .switch-row{
+      display:flex;
+      gap:10px;
+    }
+
+    .switch-row button{
+      cursor:pointer;
+      font-weight:800;
+    }
+
+    .switch-row button.on{
+      background:var(--ok);
+      color:white;
+      border-color:var(--ok);
+    }
+
+    .switch-row button.off{
+      background:#eef1f4;
+      color:#4b5563;
+    }
+
+    .canvas-wrap{
+      min-height:410px;
+      position:relative;
+      border-radius:18px;
+      background:
+        linear-gradient(rgba(11,59,102,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11,59,102,.035) 1px, transparent 1px),
+        #fbfdff;
+      background-size:24px 24px;
+      border:1px solid #d9e4ee;
+      overflow:hidden;
+    }
+
+    svg{
+      display:block;
+      width:100%;
+      height:410px;
+    }
+
+    .wire{
+      stroke:var(--line);
+      stroke-width:7;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .component{
+      stroke:#22364b;
+      stroke-width:3;
+      fill:#fff;
+    }
+
+    .resistor{
+      fill:#f5e8c8;
+    }
+
+    .source{
+      fill:#eaf4ff;
+    }
+
+    .led-glow{
+      filter:drop-shadow(0 0 12px currentColor);
+    }
+
+    .flow-dot{
+      r:5.5;
+      fill:var(--javeriana-gold);
+      filter:drop-shadow(0 0 5px rgba(214,168,75,.95));
+    }
+
+    .flow-paused{
+      display:none;
+    }
+
+    .caption{
+      font-size:14px;
+      font-weight:700;
+      fill:#26384b;
+    }
+
+    .subcaption{
+      font-size:12px;
+      fill:#546273;
+    }
+
+    .results{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(120px,1fr));
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .metric{
+      background:var(--soft);
+      border:1px solid #dce6ef;
+      border-radius:15px;
+      padding:14px;
+    }
+
+    .metric span{
+      display:block;
+      font-size:.8rem;
+      color:var(--muted);
+      margin-bottom:5px;
+    }
+
+    .metric strong{
+      color:var(--javeriana-blue);
+      font-size:1.08rem;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .alert{
+      margin-top:14px;
+      border-radius:14px;
+      padding:13px 15px;
+      font-weight:700;
+      line-height:1.45;
+    }
+
+    .alert.ok{background:#e9f8ef;color:var(--ok);border:1px solid #bce6cb}
+    .alert.warn{background:#fff5e8;color:var(--warning);border:1px solid #f1d3a5}
+    .alert.danger{background:#fff0ef;color:var(--danger);border:1px solid #efc1bd}
+
+    .equations{
+      margin-top:16px;
+      background:#f7fafc;
+      border:1px solid #dde7ef;
+      border-radius:16px;
+      padding:15px;
+      font-family:Cambria,Georgia,serif;
+      line-height:1.7;
+    }
+
+    .small-note{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:.83rem;
+      line-height:1.5;
+    }
+
+    .embed{
+      margin-top:20px;
+      background:#0f172a;
+      color:#e5e7eb;
+      padding:16px;
+      border-radius:16px;
+      overflow:auto;
+      font-family:Consolas,monospace;
+      font-size:.85rem;
+    }
+
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .results{grid-template-columns:repeat(2,1fr)}
+    }
+
+    @media (max-width:520px){
+      .app{padding:12px}
+      .panel,.hero{border-radius:16px}
+      .results{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <h1>Simulador interactivo de circuitos con resistencias y LED</h1>
+      <p>
+        Explora el comportamiento del voltaje y la corriente en configuraciones
+        serie y paralelo. Modifica la fuente, las resistencias y el tipo de LED,
+        y observa cómo cambian la corriente, las caídas de tensión y el brillo.
+      </p>
+    </section>
+
+    <section class="grid">
+      <aside class="panel">
+        <h2>Configuración</h2>
+
+        <div class="control">
+          <label>Tipo de circuito</label>
+          <div class="segmented">
+            <button id="seriesBtn" class="active">Serie</button>
+            <button id="parallelBtn">Paralelo</button>
+          </div>
+        </div>
+
+        <div class="control">
+          <label>
+            Voltaje de la fuente
+            <span class="value" id="vSourceLabel">5,0 V</span>
+          </label>
+          <input id="vSource" type="range" min="0" max="12" step="0.1" value="5" />
+        </div>
+
+        <div class="control">
+          <label>
+            Resistencia R1
+            <span class="value" id="r1Label">220 Ω</span>
+          </label>
+          <input id="r1" type="range" min="10" max="2000" step="10" value="220" />
+        </div>
+
+        <div class="control">
+          <label>
+            Resistencia R2
+            <span class="value" id="r2Label">330 Ω</span>
+          </label>
+          <input id="r2" type="range" min="10" max="2000" step="10" value="330" />
+        </div>
+
+        <div class="control">
+          <label for="ledColor">Color del LED</label>
+          <select id="ledColor">
+            <option value="red">Rojo — 1,9 V</option>
+            <option value="yellow">Amarillo — 2,1 V</option>
+            <option value="green">Verde — 2,3 V</option>
+            <option value="blue">Azul — 3,2 V</option>
+            <option value="white">Blanco — 3,2 V</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label>Estado del circuito</label>
+          <div class="switch-row">
+            <button id="powerBtn" class="on">Fuente encendida</button>
+            <button id="polarityBtn" class="off">LED directo</button>
+          </div>
+        </div>
+
+        <p class="small-note">
+          Modelo educativo simplificado: el LED se representa mediante una caída
+          de tensión fija. En un dispositivo real, la corriente depende de su curva
+          corriente–voltaje y de las tolerancias de fabricación.
+        </p>
+      </aside>
+
+      <section class="panel">
+        <h2>Visualización del circuito</h2>
+        <div class="canvas-wrap">
+          <svg id="circuitSvg" viewBox="0 0 820 410" aria-label="Circuito eléctrico interactivo">
+            <g id="seriesCircuit">
+              <path class="wire" id="seriesPath" d="M120 290 L120 100 L250 100 L330 100 L450 100 L530 100 L700 100 L700 290 L120 290" />
+
+              <rect class="component source" x="75" y="175" width="90" height="70" rx="12"></rect>
+              <text class="caption" x="120" y="202" text-anchor="middle">Fuente</text>
+              <text class="subcaption" id="sourceTextSeries" x="120" y="224" text-anchor="middle">5,0 V</text>
+
+              <rect class="component resistor" x="250" y="72" width="80" height="56" rx="10"></rect>
+              <text class="caption" x="290" y="95" text-anchor="middle">R1</text>
+              <text class="subcaption" id="r1TextSeries" x="290" y="114" text-anchor="middle">220 Ω</text>
+
+              <g id="led1Series" transform="translate(450 100)">
+                <circle class="component" cx="0" cy="0" r="24"></circle>
+                <polygon points="-8,-13 13,0 -8,13" fill="#ef4444"></polygon>
+                <line x1="15" y1="-15" x2="15" y2="15" stroke="#22364b" stroke-width="3"></line>
+              </g>
+              <text class="caption" x="450" y="146" text-anchor="middle">LED 1</text>
+
+              <rect class="component resistor" x="530" y="72" width="80" height="56" rx="10"></rect>
+              <text class="caption" x="570" y="95" text-anchor="middle">R2</text>
+              <text class="subcaption" id="r2TextSeries" x="570" y="114" text-anchor="middle">330 Ω</text>
+
+              <g id="led2Series" transform="translate(700 100)">
+                <circle class="component" cx="0" cy="0" r="24"></circle>
+                <polygon points="-8,-13 13,0 -8,13" fill="#ef4444"></polygon>
+                <line x1="15" y1="-15" x2="15" y2="15" stroke="#22364b" stroke-width="3"></line>
+              </g>
+              <text class="caption" x="700" y="146" text-anchor="middle">LED 2</text>
+
+              <circle class="flow-dot" id="seriesDot">
+                <animateMotion id="seriesMotion" dur="3s" repeatCount="indefinite" rotate="auto">
+                  <mpath href="#seriesPath"></mpath>
+                </animateMotion>
+              </circle>
+            </g>
+
+            <g id="parallelCircuit" style="display:none">
+              <path class="wire" id="parallelOuterPath" d="M120 300 L120 105 L230 105 L230 75 L700 75 L700 300 L120 300" />
+              <path class="wire" id="branch1Path" d="M230 75 L230 155 L350 155 L450 155 L700 155" />
+              <path class="wire" id="branch2Path" d="M230 75 L230 240 L350 240 L450 240 L700 240 L700 75" />
+
+              <rect class="component source" x="75" y="185" width="90" height="70" rx="12"></rect>
+              <text class="caption" x="120" y="212" text-anchor="middle">Fuente</text>
+              <text class="subcaption" id="sourceTextParallel" x="120" y="234" text-anchor="middle">5,0 V</text>
+
+              <rect class="component resistor" x="350" y="127" width="80" height="56" rx="10"></rect>
+              <text class="caption" x="390" y="150" text-anchor="middle">R1</text>
+              <text class="subcaption" id="r1TextParallel" x="390" y="169" text-anchor="middle">220 Ω</text>
+
+              <g id="led1Parallel" transform="translate(530 155)">
+                <circle class="component" cx="0" cy="0" r="24"></circle>
+                <polygon points="-8,-13 13,0 -8,13" fill="#ef4444"></polygon>
+                <line x1="15" y1="-15" x2="15" y2="15" stroke="#22364b" stroke-width="3"></line>
+              </g>
+              <text class="caption" x="530" y="195" text-anchor="middle">Rama 1</text>
+
+              <rect class="component resistor" x="350" y="212" width="80" height="56" rx="10"></rect>
+              <text class="caption" x="390" y="235" text-anchor="middle">R2</text>
+              <text class="subcaption" id="r2TextParallel" x="390" y="254" text-anchor="middle">330 Ω</text>
+
+              <g id="led2Parallel" transform="translate(530 240)">
+                <circle class="component" cx="0" cy="0" r="24"></circle>
+                <polygon points="-8,-13 13,0 -8,13" fill="#ef4444"></polygon>
+                <line x1="15" y1="-15" x2="15" y2="15" stroke="#22364b" stroke-width="3"></line>
+              </g>
+              <text class="caption" x="530" y="280" text-anchor="middle">Rama 2</text>
+
+              <circle class="flow-dot" id="parallelDotOuter">
+                <animateMotion id="parallelMotionOuter" dur="3s" repeatCount="indefinite">
+                  <mpath href="#parallelOuterPath"></mpath>
+                </animateMotion>
+              </circle>
+
+              <circle class="flow-dot" id="parallelDot1">
+                <animateMotion id="parallelMotion1" dur="2.5s" repeatCount="indefinite">
+                  <mpath href="#branch1Path"></mpath>
+                </animateMotion>
+              </circle>
+
+              <circle class="flow-dot" id="parallelDot2">
+                <animateMotion id="parallelMotion2" dur="2.5s" repeatCount="indefinite">
+                  <mpath href="#branch2Path"></mpath>
+                </animateMotion>
+              </circle>
+            </g>
+          </svg>
+        </div>
+
+        <div class="results">
+          <div class="metric">
+            <span>Corriente total</span>
+            <strong id="iTotal">0,00 mA</strong>
+          </div>
+          <div class="metric">
+            <span>Corriente rama 1</span>
+            <strong id="i1">0,00 mA</strong>
+          </div>
+          <div class="metric">
+            <span>Corriente rama 2</span>
+            <strong id="i2">0,00 mA</strong>
+          </div>
+          <div class="metric">
+            <span>Resistencia equivalente</span>
+            <strong id="rEq">0 Ω</strong>
+          </div>
+          <div class="metric">
+            <span>Caída en R1</span>
+            <strong id="vr1">0,00 V</strong>
+          </div>
+          <div class="metric">
+            <span>Caída en R2</span>
+            <strong id="vr2">0,00 V</strong>
+          </div>
+          <div class="metric">
+            <span>Potencia total</span>
+            <strong id="power">0,00 mW</strong>
+          </div>
+          <div class="metric">
+            <span>Estado del LED</span>
+            <strong id="ledState">Apagado</strong>
+          </div>
+        </div>
+
+        <div id="alertBox" class="alert ok">
+          Configuración segura para una demostración introductoria.
+        </div>
+
+        <div id="equations" class="equations"></div>
+      </section>
+    </section>
+
+    <div class="embed" style="display:none">
+      Para embeber esta simulación en otra página:<br><br>
+      &lt;iframe src="simulador_circuitos_led.html" width="100%" height="900" style="border:0;border-radius:16px;" loading="lazy"&gt;&lt;/iframe&gt;
+    </div>
+  </main>
+
+  <script>
+    const ledData = {
+      red:    {vf:1.9, color:"#ef4444"},
+      yellow: {vf:2.1, color:"#facc15"},
+      green:  {vf:2.3, color:"#22c55e"},
+      blue:   {vf:3.2, color:"#3b82f6"},
+      white:  {vf:3.2, color:"#f8fafc"}
+    };
+
+    let mode = "series";
+    let powerOn = true;
+    let reversePolarity = false;
+
+    const $ = id => document.getElementById(id);
+    const fmt = (n, d=2) => Number(n).toLocaleString("es-CO",{minimumFractionDigits:d,maximumFractionDigits:d});
+    const ohmFmt = n => n >= 1000 ? `${fmt(n/1000,2)} kΩ` : `${fmt(n,0)} Ω`;
+
+    const controls = ["vSource","r1","r2","ledColor"];
+    controls.forEach(id => $(id).addEventListener("input", update));
+
+    $("seriesBtn").addEventListener("click",()=>{
+      mode="series";
+      $("seriesBtn").classList.add("active");
+      $("parallelBtn").classList.remove("active");
+      $("seriesCircuit").style.display="";
+      $("parallelCircuit").style.display="none";
+      update();
+    });
+
+    $("parallelBtn").addEventListener("click",()=>{
+      mode="parallel";
+      $("parallelBtn").classList.add("active");
+      $("seriesBtn").classList.remove("active");
+      $("parallelCircuit").style.display="";
+      $("branch1Path").setAttribute("d", "M230 75 L230 155 L350 155 L450 155 L700 155");
+      $("branch2Path").setAttribute("d", "M230 75 L230 240 L350 240 L450 240 L700 240 L700 75");
+      $("seriesCircuit").style.display="none";
+      update();
+    });
+
+    $("powerBtn").addEventListener("click",()=>{
+      powerOn=!powerOn;
+      $("powerBtn").textContent=powerOn ? "Fuente encendida" : "Fuente apagada";
+      $("powerBtn").className=powerOn ? "on" : "off";
+      update();
+    });
+
+    $("polarityBtn").addEventListener("click",()=>{
+      reversePolarity=!reversePolarity;
+      $("polarityBtn").textContent=reversePolarity ? "LED invertido" : "LED directo";
+      $("polarityBtn").className=reversePolarity ? "on" : "off";
+      update();
+    });
+
+    function setAnimationSpeed(currentA){
+      const currentmA = Math.max(currentA*1000,0.01);
+      const duration = Math.max(0.7, Math.min(6, 45/currentmA));
+      ["seriesMotion","parallelMotionOuter","parallelMotion1","parallelMotion2"].forEach(id=>{
+        const el = $(id);
+        if(el) el.setAttribute("dur",`${duration}s`);
+      });
+
+      const hide = !powerOn || reversePolarity || currentA <= 0;
+      ["seriesDot","parallelDotOuter","parallelDot1","parallelDot2"].forEach(id=>{
+        const el = $(id);
+        if(el) el.style.display = hide ? "none" : "";
+      });
+    }
+
+    function setLedVisual(currentA){
+      const led = ledData[$("ledColor").value];
+      const mA = currentA*1000;
+      const brightness = Math.max(0, Math.min(1, mA/20));
+      ["led1Series","led2Series","led1Parallel","led2Parallel"].forEach(id=>{
+        const g=$(id);
+        if(!g) return;
+        const poly=g.querySelector("polygon");
+        if(poly) poly.setAttribute("fill",led.color);
+        g.style.color=led.color;
+        g.style.opacity=reversePolarity || !powerOn || mA<0.5 ? .28 : .45 + brightness*.55;
+        g.classList.toggle("led-glow",powerOn && !reversePolarity && mA>=1);
+      });
+    }
+
+    function update(){
+      const Vs=parseFloat($("vSource").value);
+      const R1=parseFloat($("r1").value);
+      const R2=parseFloat($("r2").value);
+      const led=ledData[$("ledColor").value];
+      const Vf=led.vf;
+
+      $("vSourceLabel").textContent=`${fmt(Vs,1)} V`;
+      $("r1Label").textContent=ohmFmt(R1);
+      $("r2Label").textContent=ohmFmt(R2);
+      $("sourceTextSeries").textContent=`${fmt(Vs,1)} V`;
+      $("sourceTextParallel").textContent=`${fmt(Vs,1)} V`;
+      $("r1TextSeries").textContent=ohmFmt(R1);
+      $("r2TextSeries").textContent=ohmFmt(R2);
+      $("r1TextParallel").textContent=ohmFmt(R1);
+      $("r2TextParallel").textContent=ohmFmt(R2);
+
+      let I=0,I1=0,I2=0,Req=0,VR1=0,VR2=0,P=0;
+
+      if(powerOn && !reversePolarity){
+        if(mode==="series"){
+          Req=R1+R2;
+          const available=Vs-(2*Vf);
+          I=available>0 ? available/Req : 0;
+          I1=I2=I;
+          VR1=I*R1;
+          VR2=I*R2;
+          P=Vs*I;
+        }else{
+          Req=(R1*R2)/(R1+R2);
+          I1=Vs>Vf ? (Vs-Vf)/R1 : 0;
+          I2=Vs>Vf ? (Vs-Vf)/R2 : 0;
+          I=I1+I2;
+          VR1=I1*R1;
+          VR2=I2*R2;
+          P=Vs*I;
+        }
+      }else{
+        Req=mode==="series" ? R1+R2 : (R1*R2)/(R1+R2);
+      }
+
+      $("iTotal").textContent=`${fmt(I*1000)} mA`;
+      $("i1").textContent=`${fmt(I1*1000)} mA`;
+      $("i2").textContent=`${fmt(I2*1000)} mA`;
+      $("rEq").textContent=ohmFmt(Req);
+      $("vr1").textContent=`${fmt(VR1)} V`;
+      $("vr2").textContent=`${fmt(VR2)} V`;
+      $("power").textContent=`${fmt(P*1000)} mW`;
+
+      const ledCurrent = mode==="series" ? I : Math.max(I1,I2);
+      const mA=ledCurrent*1000;
+      let ledState="Apagado";
+      if(powerOn && !reversePolarity){
+        if(mA>=20) ledState="Sobrecorriente";
+        else if(mA>=10) ledState="Brillo alto";
+        else if(mA>=3) ledState="Brillo normal";
+        else if(mA>=0.5) ledState="Brillo bajo";
+      }
+      if(reversePolarity) ledState="Polaridad inversa";
+      $("ledState").textContent=ledState;
+
+      const alertBox=$("alertBox");
+      if(!powerOn){
+        alertBox.className="alert warn";
+        alertBox.textContent="La fuente está apagada. No circula corriente por el circuito.";
+      }else if(reversePolarity){
+        alertBox.className="alert warn";
+        alertBox.textContent="Los LED están polarizados inversamente. En este modelo educativo no permiten el paso de corriente.";
+      }else if(mode==="series" && Vs <= 2*Vf){
+        alertBox.className="alert warn";
+        alertBox.textContent="El voltaje de la fuente no supera la suma de las caídas de tensión de los dos LED; permanecerán apagados.";
+      }else if(mode==="parallel" && Vs <= Vf){
+        alertBox.className="alert warn";
+        alertBox.textContent="El voltaje de la fuente no supera la caída directa del LED; las ramas no conducen.";
+      }else if((mode==="series" && I*1000>20) || (mode==="parallel" && (I1*1000>20 || I2*1000>20))){
+        alertBox.className="alert danger";
+        alertBox.textContent="Advertencia: la corriente supera aproximadamente 20 mA en al menos un LED. En un circuito real podría dañarse.";
+      }else{
+        alertBox.className="alert ok";
+        alertBox.textContent="Configuración segura para una demostración introductoria.";
+      }
+
+      if(mode==="series"){
+        $("equations").innerHTML=`
+          <strong>Circuito en serie</strong><br>
+          R<sub>eq</sub> = R1 + R2 = ${ohmFmt(Req)}<br>
+          I = (V<sub>s</sub> − 2V<sub>LED</sub>) / R<sub>eq</sub> = ${fmt(I*1000)} mA<br>
+          V<sub>R1</sub> = I·R1 = ${fmt(VR1)} V &nbsp; | &nbsp;
+          V<sub>R2</sub> = I·R2 = ${fmt(VR2)} V
+        `;
+      }else{
+        $("equations").innerHTML=`
+          <strong>Circuito en paralelo</strong><br>
+          R<sub>eq</sub> = (R1·R2)/(R1+R2) = ${ohmFmt(Req)}<br>
+          I1 = (V<sub>s</sub> − V<sub>LED</sub>)/R1 = ${fmt(I1*1000)} mA<br>
+          I2 = (V<sub>s</sub> − V<sub>LED</sub>)/R2 = ${fmt(I2*1000)} mA<br>
+          I<sub>T</sub> = I1 + I2 = ${fmt(I*1000)} mA
+        `;
+      }
+
+      setAnimationSpeed(I);
+      setLedVisual(ledCurrent);
+    }
+
+    update();
+  </script>
+</body>
+</html>

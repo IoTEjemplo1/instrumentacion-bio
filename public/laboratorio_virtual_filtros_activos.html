@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio Virtual de Filtros Activos</title>
+<script src="plotly.min.js"></script>
+<style>
+:root{
+  --bg:#f3f6fb;--card:#fff;--ink:#132238;--muted:#64748b;--line:#d8e1ee;
+  --p:#184c8c;--s:#c89b3c;--a:#6d47c7;--g:#15967d;--ok:#138a43;
+  --bad:#b42318;--warn:#b7791f;--shadow:0 14px 32px rgba(24,76,140,.11)
+}
+[data-theme=dark]{
+  --bg:#0d1525;--card:#111c2f;--ink:#f5f8fc;--muted:#aab5c7;--line:#31415b;
+  --p:#63a7f5;--s:#f0c76d;--a:#aa8bf0;--g:#44d2b3;--ok:#4ade80;
+  --bad:#fb7185;--warn:#fbbf24;--shadow:0 14px 32px rgba(0,0,0,.3)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(135deg,#0b3263,#1c5b9f);color:#fff;padding:24px clamp(18px,4vw,58px)}
+header h1{font-size:clamp(1.8rem,3vw,2.8rem);margin:.35rem 0}
+header p{margin:0;max-width:1100px;opacity:.92}
+main{max-width:1580px;margin:auto;padding:18px}
+.panel,.toolbar{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:12px;margin-bottom:16px;align-items:center}
+button,select,input{font:inherit}
+button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 12px;border-radius:11px;font-weight:700;cursor:pointer}
+button:hover{transform:translateY(-1px)}
+button.primary{background:var(--p);color:#fff;border-color:var(--p)}
+button.secondary{background:var(--s);color:#fff;border-color:var(--s)}
+.grid{display:grid;grid-template-columns:minmax(330px,410px) 1fr;gap:16px}
+.controls{padding:16px;max-height:calc(100vh - 26px);overflow:auto;position:sticky;top:12px}
+.controls h2,.head h2,.activity h2{margin:0}
+.sub{color:var(--muted);font-size:.88rem}
+.section{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.section h3{margin:0 0 8px;font-size:1rem}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:8px 0}
+.value{font-weight:800;color:var(--p);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--p)}
+input[type=checkbox]{accent-color:var(--p)}
+select,input[type=number]{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--card);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:7px 10px;border-radius:999px;font-size:.82rem}
+.chip.active{background:var(--p);color:#fff;border-color:var(--p)}
+.formula{font-family:Cambria,Georgia,serif;background:color-mix(in srgb,var(--card) 90%,var(--s) 10%);border-radius:10px;padding:8px;text-align:center;margin-top:8px}
+.circuit{border:1px solid var(--line);border-radius:13px;padding:8px;background:color-mix(in srgb,var(--card) 95%,var(--p) 5%);margin-top:8px}
+.circuit svg{width:100%;height:180px}
+.dash{display:grid;gap:16px}
+.card{padding:13px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.plot{height:335px}.plot.tall{height:410px}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin-top:8px}
+.metric{border:1px solid var(--line);border-radius:11px;padding:8px;background:color-mix(in srgb,var(--card) 95%,var(--p) 5%)}
+.metric span{display:block;color:var(--muted);font-size:.73rem}.metric strong{font-size:.96rem}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.note{padding:9px;border-radius:10px;background:color-mix(in srgb,var(--card) 86%,var(--s) 14%);font-size:.84rem}
+.activity{padding:16px;margin-top:16px}
+.activity-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.challenge{border:1px solid var(--line);border-radius:14px;padding:13px}
+.feedback{min-height:42px;margin-top:8px;font-weight:700}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.status{padding:5px 9px;border-radius:999px;background:color-mix(in srgb,var(--card) 86%,var(--ok) 14%);font-size:.8rem;font-weight:800}
+.warning{color:var(--warn);font-weight:700}
+.info{font-size:.82rem;color:var(--muted);line-height:1.45}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.controls{position:static;max-height:none}.metrics{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){main{padding:10px}.compare{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.activity-grid{grid-template-columns:1fr}.plot{height:310px}}
+
+.info-btn { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--p); color:#fff; font-size:12px; font-weight:bold; cursor:help; margin-left:8px; vertical-align:middle; line-height:1; }
+#global-tooltip { position:fixed; width:300px; background:var(--card); color:var(--ink); border:1px solid var(--p); border-radius:8px; padding:12px; font-size:13px; font-weight:normal; box-shadow:0 10px 25px rgba(0,0,0,0.3); opacity:0; visibility:hidden; transition:opacity 0.2s; z-index:10000; pointer-events:none; text-align:left; line-height:1.4; white-space:normal; }
+#global-tooltip.visible { opacity:1; visibility:visible; }
+#global-tooltip::after { content:''; position:absolute; top:50%; right:100%; margin-top:-6px; border-width:6px; border-style:solid; border-color:transparent var(--p) transparent transparent; }
+#global-tooltip b { color:var(--p); }
+
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:.78rem;letter-spacing:.13em;text-transform:uppercase;opacity:.8">Bioinstrumentación · Filtros activos</div>
+  <h1>🎛️ Laboratorio Virtual de Filtros Activos</h1>
+  <p>Explora cómo un amplificador operacional permite filtrar y amplificar señales, y cómo sus límites reales —ganancia, GBW, slew rate, alimentación y saturación— modifican el comportamiento esperado.</p>
+</header>
+
+<main>
+<div class="toolbar">
+  <span style="font-weight:800;color:var(--p);display:flex;align-items:center;margin-right:8px;font-size: 0.95rem;">Casos preconfigurados <div tabindex="0" class="info-btn" data-tooltip="Carga rápidamente configuraciones típicas para mitigar ruido en instrumentación biomédica.">i</div></span>
+  <button class="primary" id="preTraffic">Tráfico (Pasa altas)</button>
+  <button id="preElec">Electromagnético (Pasa bajas)</button>
+  <button id="preBand">Aislar Señal (Pasa banda)</button>
+  <button id="pre60Hz">Interferencia Eléctrica</button>
+  <button class="secondary" id="guided">Modo guiado</button>
+  <button id="reset">Reiniciar</button>
+  <button id="theme">Modo oscuro</button>
+  <span class="status" id="status">● Simulación lista</span>
+</div>
+
+<div class="grid">
+<aside class="panel controls">
+  <h2 style="display:flex;align-items:center;">Diseño del filtro activo <div tabindex="0" class="info-btn" data-tooltip="Sección principal para definir la arquitectura general de tu filtro. Aquí seleccionas el tipo y el orden para establecer la respuesta en frecuencia deseada.">i</div></h2>
+  <div class="sub">Configura la red RC, la ganancia y el amplificador operacional.</div>
+
+  <div class="section">
+    <h3>1. Tipo de filtro activo</h3>
+    <div class="chips">
+      <button class="chip active" data-filter="low">Pasabajas</button>
+      <button class="chip" data-filter="high">Pasaaltas</button>
+      <button class="chip" data-filter="band">Pasabanda</button>
+    </div>
+    <div class="row"><label>Orden ideal</label><span class="value" id="orderV"></span></div>
+    <input id="order" type="range" min="1" max="4" step="1" value="1">
+  </div>
+
+  <div class="section">
+    <h3 style="display:flex;align-items:center;">2. Red RC <div tabindex="0" class="info-btn" data-tooltip="Ajusta los valores de las resistencias (R) y condensadores (C) que forman la etapa pasiva del filtro.&lt;br&gt;&lt;br&gt;Estos componentes son los responsables de determinar exactamente la &lt;b&gt;frecuencia de corte&lt;/b&gt;.">i</div></h3>
+    <div class="row"><label>Resistencia R</label><span class="value" id="rV"></span></div>
+    <input id="R" type="range" min="100" max="100000" step="100" value="10000">
+    <div class="row"><label>Capacitancia C</label><span class="value" id="cV"></span></div>
+    <input id="C" type="range" min="1" max="1000" step="1" value="100">
+    <div class="row"><label>Frecuencia de corte</label><span class="value" id="fcV"></span></div>
+    <input id="fc" type="range" min="0.5" max="500" step="0.5" value="159">
+    <label><input id="link" type="checkbox"> Calcular fc a partir de R y C</label>
+    <div class="formula">fc = 1 / (2πRC)</div>
+  </div>
+
+  <div class="section">
+    <h3 style="display:flex;align-items:center;">3. Ganancia no inversora <div tabindex="0" class="info-btn" data-tooltip="Controla el nivel de amplificación adicional que proporciona el circuito activo.&lt;br&gt;&lt;br&gt;Dado que las señales biomédicas tienen amplitudes muy pequeñas, esta etapa es crucial para llevar la señal al rango adecuado de lectura.">i</div></h3>
+    <div class="row"><label>R1</label><span class="value" id="r1V"></span></div>
+    <input id="R1" type="range" min="100" max="50000" step="100" value="1000">
+    <div class="row"><label>R2</label><span class="value" id="r2V"></span></div>
+    <input id="R2" type="range" min="0" max="100000" step="100" value="9000">
+    <div class="row"><label>Ganancia AF</label><span class="value" id="gainV"></span></div>
+    <div class="formula">AF = 1 + R2 / R1</div>
+  </div>
+
+  <div class="section">
+    <h3 style="display:flex;align-items:center;">4. Amplificador operacional <div tabindex="0" class="info-btn" data-tooltip="Define las características del componente activo del filtro.&lt;br&gt;&lt;br&gt;Permite evaluar cómo las limitaciones reales de un Op-Amp comercial (como el ancho de banda, la saturación o el slew rate) afectan el desempeño ideal del filtro.">i</div></h3>
+    <select id="opamp">
+      <option value="ideal">AO ideal</option>
+      <option value="lm741" selected>LM741</option>
+      <option value="lm324">LM324</option>
+      <option value="ad620">AD620 (InAmp)</option>
+      <option value="custom">Personalizado</option>
+    </select>
+    <div class="row"><label>GBW</label><span class="value" id="gbwV"></span></div>
+    <input id="gbw" type="range" min="0.1" max="20" step="0.1" value="1">
+    <div class="row"><label>Slew Rate</label><span class="value" id="srV"></span></div>
+    <input id="sr" type="range" min="0.05" max="25" step="0.05" value="0.3">
+    <div class="row"><label>Alimentación positiva</label><span class="value" id="vplusV"></span></div>
+    <input id="vplus" type="range" min="3" max="18" step="0.5" value="5">
+    <div class="row"><label>Alimentación negativa</label><span class="value" id="vminusV"></span></div>
+    <input id="vminus" type="range" min="-18" max="0" step="0.5" value="0">
+    <label><input id="realLimits" type="checkbox" checked> Aplicar límites reales del AO</label>
+    <div class="info">El ancho de banda de lazo cerrado se aproxima como GBW/AF. La salida también puede saturarse por la alimentación o limitarse por el slew rate.</div>
+  </div>
+
+  <div class="section">
+    <h3 style="display:flex;align-items:center;">5. Señal de entrada <div tabindex="0" class="info-btn" data-tooltip="Selecciona el tipo de onda que ingresarás al circuito para probarlo.&lt;br&gt;&lt;br&gt;Puedes inyectar ondas de prueba básicas o señales biomédicas simuladas para observar cómo responde la dinámica de tu circuito.">i</div></h3>
+    <select id="source">
+      <option value="ecg">ECG (Physionet)</option>
+      <option value="emg">EMG (Alta frecuencia)</option>
+      <option value="resp">Respiración (Baja frecuencia)</option>
+      <option value="sine">Senoidal</option>
+      <option value="square">Cuadrada</option>
+      <option value="multi">Multisinusoidal</option>
+    </select>
+    <div class="row"><label>Amplitud</label><span class="value" id="ampV"></span></div>
+    <input id="amp" type="range" min="0.05" max="3" step="0.05" value="0.5">
+    <div class="row"><label>Frecuencia principal</label><span class="value" id="finV"></span></div>
+    <input id="fin" type="range" min="0.5" max="500" step="0.5" value="10">
+    <div class="row"><label>Frecuencia de muestreo</label><span class="value" id="fsV"></span></div>
+    <input id="fs" type="range" min="512" max="4096" step="512" value="2048">
+    <div class="row"><label>Duración</label><span class="value" id="durV"></span></div>
+    <input id="dur" type="range" min="1" max="6" step="1" value="3">
+  </div>
+
+  <div class="section">
+    <h3 style="display:flex;align-items:center;">6. Ruido Ambiental <div tabindex="0" class="info-btn" data-tooltip="Simula condiciones reales añadiendo artefactos ambientales a la señal.">i</div></h3>
+    <div class="chips" id="noiseButtons">
+      <button class="chip active" data-noise="none">Sin ruido</button>
+      <button class="chip" data-noise="traffic">Tráfico (Baja)</button>
+      <button class="chip" data-noise="nature">Natural (Rosa)</button>
+      <button class="chip" data-noise="voices">Voces (Media)</button>
+      <button class="chip" data-noise="electric">Eléctrico (60Hz)</button>
+      <button class="chip" data-noise="emg">Electromagnético (Alta)</button>
+    </div>
+    <input type="hidden" id="noiseType" value="none">
+    <div class="row"><label>Intensidad del Ruido</label><span class="value" id="noiseLevelV"></span></div>
+    <input id="noiseLevel" type="range" min="0" max="1" step="0.02" value="0.2">
+    <div id="solutionGuide" class="note" style="margin-top:10px;display:none;border-left:4px solid var(--p)"></div>
+  </div>
+
+  <div class="section">
+    <h3 style="display:flex;align-items:center;">7. Visualización <div tabindex="0" class="info-btn" data-tooltip="Selecciona qué elementos deseas visualizar en los gráficos para facilitar el análisis comparativo.">i</div></h3>
+    <label><input id="showInput" type="checkbox" checked> Entrada contaminada</label><br>
+    <label><input id="showIdeal" type="checkbox" checked> Salida ideal</label><br>
+    <label><input id="showReal" type="checkbox" checked> Salida real del AO</label><br>
+    <label><input id="showPhase" type="checkbox" checked> Fase en Bode</label><br>
+    <label><input id="markers" type="checkbox" checked> Marcadores</label>
+  </div>
+
+  <div class="circuit" id="circuit"></div>
+</aside>
+
+<section class="dash">
+  <article class="panel card">
+    <div class="head"><div><h2 style="display:flex;align-items:center;">Respuesta en frecuencia <div tabindex="0" class="info-btn" data-tooltip="Analiza gráficamente el diagrama de Bode.&lt;br&gt;&lt;br&gt;Sirve para verificar matemáticamente la ganancia y atenuación según la frecuencia de tu circuito.">i</div></h2><div class="sub">Compara el filtro ideal con la respuesta limitada por el amplificador operacional.</div><div class="sub" style="color:var(--p);font-weight:600;margin-top:4px;">Nota: Esta curva representa al circuito (Bode). No cambia al seleccionar diferentes señales de entrada.</div></div></div>
+    <div id="bodeExplain" class="note" style="margin:8px 0;text-align:center;font-size:0.95rem"></div>
+    <div id="bode" class="plot tall"></div>
+    <div class="metrics">
+      <div class="metric"><span>Frecuencia de corte</span><strong id="mFc"></strong></div>
+      <div class="metric"><span>Ganancia de banda</span><strong id="mGain"></strong></div>
+      <div class="metric"><span>Ganancia en fc</span><strong id="mGainFc"></strong></div>
+      <div class="metric"><span>BW lazo cerrado</span><strong id="mCLBW"></strong></div>
+      <div class="metric"><span>Pendiente</span><strong id="mSlope"></strong></div>
+      <div class="metric"><span>Estado</span><strong id="mState"></strong></div>
+    </div>
+  </article>
+
+  <div class="compare">
+    <article class="panel card">
+      <div class="head"><div><h2 style="display:flex;align-items:center;">Dominio del tiempo <div tabindex="0" class="info-btn" data-tooltip="Compara visualmente la señal de entrada ideal, frente a la ruidosa y la señal resultante tras ser filtrada por tu circuito.">i</div></h2><div class="sub">Entrada, salida ideal y salida real del AO.</div></div></div>
+      <div id="time" class="plot"></div>
+    </article>
+    <article class="panel card">
+      <div class="head"><div><h2 style="display:flex;align-items:center;">Dominio de la frecuencia <div tabindex="0" class="info-btn" data-tooltip="Espectrograma de la señal. Útil para verificar si el filtro está atenuando correctamente las frecuencias de ruido o interferencia.">i</div></h2><div class="sub">Espectro de entrada y de salida.</div></div></div>
+      <div id="freq" class="plot"></div>
+    </article>
+  </div>
+
+  <article class="panel card">
+    <div class="head"><div><h2 style="display:flex;align-items:center;">Desempeño del amplificador operacional <div tabindex="0" class="info-btn" data-tooltip="Analiza cómo las restricciones físicas del AO impactan en la calidad de la señal y en la precisión de la salida.">i</div></h2><div class="sub">Indicadores de ganancia, saturación y limitación dinámica.</div></div></div>
+    <div class="metrics">
+      <div class="metric"><span>Salida pico ideal</span><strong id="peakIdeal"></strong></div>
+      <div class="metric"><span>Salida pico real</span><strong id="peakReal"></strong></div>
+      <div class="metric"><span>Saturación</span><strong id="sat"></strong></div>
+      <div class="metric"><span>Limitación por SR</span><strong id="srLimit"></strong></div>
+      <div class="metric"><span>Error RMS</span><strong id="errRms"></strong></div>
+      <div class="metric"><span>Mejora SNR</span><strong id="snrGain"></strong></div>
+    </div>
+    <div class="note" id="interpret"></div>
+  </article>
+</section>
+</div>
+
+<section class="panel activity">
+  <h2>🧪 Misiones de aprendizaje</h2>
+  <div class="activity-grid">
+    <div class="challenge">
+      <strong id="missionT"></strong>
+      <p id="missionD"></p>
+      <button class="primary" id="check">Verificar misión</button>
+      <button id="next">Siguiente misión</button>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <div>
+      <strong>Preguntas orientadoras</strong>
+      <ol class="sub">
+        <li>¿Qué diferencia existe entre la salida ideal y la salida real?</li>
+        <li>¿Cómo cambia el ancho de banda al aumentar la ganancia?</li>
+        <li>¿Qué ocurre cuando la salida supera los rieles de alimentación?</li>
+        <li>¿Por qué el slew rate importa en señales rápidas?</li>
+        <li>¿Qué AO seleccionarías para una señal biomédica de baja amplitud?</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<div class="sub" style="text-align:center;margin:14px">Simulación educativa. Los modelos de AO son aproximados y no sustituyen la hoja de datos ni una simulación SPICE.</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const state={filter:'low',mission:0};
+const opamps={
+ ideal:{gbw:1000,sr:1000,vp:15,vn:-15},
+ lm741:{gbw:1,sr:0.5,vp:15,vn:-15},
+ lm324:{gbw:1.2,sr:0.5,vp:5,vn:0},
+ ad620:{gbw:1,sr:1.2,vp:15,vn:-15}
+};
+const missions=[
+ ['Misión 1 — Diseñar un pasabajas activo','Configura un filtro pasabajas con fc cercana a 40 Hz y ganancia AF entre 4 y 6.'],
+ ['Misión 2 — Diseñar un pasaaltas activo','Configura un filtro pasaaltas con fc cercana a 1 Hz y ganancia AF igual a 2.'],
+ ['Misión 3 — Evitar saturación','Logra una salida sin saturación ajustando la amplitud, la ganancia o la alimentación.'],
+ ['Misión 4 — Seleccionar el AO','Usa una ganancia AF ≥ 10 y selecciona un AO cuyo ancho de banda de lazo cerrado sea mayor que 100 kHz.']
+];
+
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function pow2(n){let p=1;while(p<n)p<<=1;return p}
+function fft(r,i,inv=false){
+ const n=r.length;
+ for(let a=1,j=0;a<n;a++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(a<j){[r[a],r[j]]=[r[j],r[a]];[i[a],i[j]]=[i[j],i[a]]}}
+ for(let l=2;l<=n;l<<=1){const ang=(inv?2:-2)*Math.PI/l,c=Math.cos(ang),s=Math.sin(ang);for(let a=0;a<n;a+=l){let wr=1,wi=0;for(let j=0;j<l/2;j++){const ur=r[a+j],ui=i[a+j],vr=r[a+j+l/2]*wr-i[a+j+l/2]*wi,vi=r[a+j+l/2]*wi+i[a+j+l/2]*wr;r[a+j]=ur+vr;i[a+j]=ui+vi;r[a+j+l/2]=ur-vr;i[a+j+l/2]=ui-vi;const nw=wr*c-wi*s;wi=wr*s+wi*c;wr=nw}}}
+ if(inv)for(let a=0;a<n;a++){r[a]/=n;i[a]/=n}
+}
+function gain(){return 1+(+$('R2').value)/(+$('R1').value)}
+function fc(){return +$('fc').value}
+function source(t){
+ const type=$('source').value,A=+$('amp').value,f=+$('fin').value;
+ if(type==='sine')return A*Math.sin(2*Math.PI*f*t);
+ if(type==='square')return A*(Math.sin(2*Math.PI*f*t)>=0?1:-1);
+ if(type==='multi')return A*(Math.sin(2*Math.PI*f*t)+.5*Math.sin(2*Math.PI*3*f*t)+.25*Math.sin(2*Math.PI*5*f*t));
+ if(type==='resp')return A*Math.sin(2*Math.PI*0.3*t) + 0.1*A*Math.sin(2*Math.PI*0.6*t);
+ if(type==='emg'){
+    let env = Math.max(0, Math.sin(2*Math.PI*0.8*t));
+    return A * env * (Math.random()-0.5) * 2;
+ }
+ const per=60/72,p=(t%per)/per,g=(m,s,a)=>a*Math.exp(-.5*((p-m)/s)**2);
+ return A*(g(.18,.025,.12)+g(.38,.012,-.18)+g(.40,.01,1.2)+g(.43,.015,-.35)+g(.68,.05,.32));
+}
+function signals(){
+ const fs=+$('fs').value,dur=+$('dur').value,n=Math.min(pow2(fs*dur),8192),t=new Array(n),clean=new Float64Array(n),input=new Float64Array(n);
+ const noiseType = $('noiseType').value;
+ const noiseLvl = +$('noiseLevel').value;
+ let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+ for(let k=0;k<n;k++){
+   t[k]=k/fs; let s=source(t[k]), y=s; clean[k]=s;
+   if(noiseType !== 'none' && noiseLvl > 0) {
+      let noise = 0, white = randn();
+      if(noiseType === 'traffic') {
+         b0 = 0.99 * b0 + 0.01 * white; noise = b0 * 5;
+      } else if(noiseType === 'nature') {
+         b0 = 0.99886 * b0 + white * 0.0555179; b1 = 0.99332 * b1 + white * 0.0750759;
+         b2 = 0.96900 * b2 + white * 0.1538520; b3 = 0.86650 * b3 + white * 0.3104856;
+         b4 = 0.55000 * b4 + white * 0.5329522; b5 = -0.7616 * b5 - white * 0.0168980;
+         noise = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.2;
+         b6 = white * 0.115926;
+      } else if(noiseType === 'voices') {
+         let env = Math.sin(2*Math.PI*2*t[k]) * Math.sin(2*Math.PI*0.5*t[k]);
+         noise = white * (0.3 + 0.7 * Math.abs(env)) * Math.sin(2*Math.PI*800*t[k] + 5*white);
+      } else if(noiseType === 'electric') {
+         noise = Math.sin(2*Math.PI*60*t[k]) + 0.4*Math.sin(2*Math.PI*120*t[k]) + 0.2*Math.sin(2*Math.PI*180*t[k]);
+      } else if(noiseType === 'emg') {
+         b0 = 0.8 * b0 + white; noise = (white - b0*0.5) * 1.5; 
+      }
+      y += noise * noiseLvl;
+   }
+   input[k]=y;
+ }
+ return{fs,n,t,clean,input};
+}
+function Hideal(f){
+ const o=+$('order').value,w=f/(fc()||1e-12),A=gain();
+ if(state.filter==='low')return{m:A/Math.sqrt(1+w**(2*o)),p:-o*Math.atan(w)};
+ else if(state.filter==='high')return{m:f===0?0:A*w**o/Math.sqrt(1+w**(2*o)),p:o*(Math.PI/2-Math.atan(w))};
+ else { 
+    const Q = 1.0, den = Math.sqrt(1 + Q*Q*Math.pow(w - 1/w, 2));
+    const m = f===0?0:(A / den), p = Math.PI/2 - Math.atan(Q*(w - 1/w));
+    return {m: Math.pow(m/A, o)*A, p: p*o};
+ }
+}
+function Hreal(f){
+ const h=Hideal(f);
+ if(!$('realLimits').checked)return h;
+ const bw=(+$('gbw').value*1e6)/Math.max(gain(),1e-9);
+ const ao=1/Math.sqrt(1+(f/bw)**2),phase=-Math.atan(f/bw);
+ return{m:h.m*ao,p:h.p+phase};
+}
+function filterFreq(x,fs,Hfun){
+ const r=Float64Array.from(x),im=new Float64Array(x.length);fft(r,im);
+ for(let k=0;k<x.length;k++){
+   const sg=k<=x.length/2?k:k-x.length,f=Math.abs(sg)*fs/x.length,h=Hfun(f),ph=sg>=0?h.p:-h.p,cr=h.m*Math.cos(ph),ci=h.m*Math.sin(ph),a=r[k],b=im[k];
+   r[k]=a*cr-b*ci;im[k]=a*ci+b*cr;
+ }
+ fft(r,im,true);return r;
+}
+function applyOutputLimits(y,fs){
+ if(!$('realLimits').checked)return{y:Float64Array.from(y),sat:false,sr:false};
+ const out=new Float64Array(y.length),vp=+$('vplus').value-.2,vn=+$('vminus').value+.2,maxDv=+$('sr').value*1e6/fs;
+ let sat=false,srLim=false;
+ out[0]=Math.min(vp,Math.max(vn,y[0]));
+ for(let k=1;k<y.length;k++){
+   let target=y[k],dv=target-out[k-1];
+   if(Math.abs(dv)>maxDv){target=out[k-1]+Math.sign(dv)*maxDv;srLim=true}
+   if(target>vp){target=vp;sat=true}
+   if(target<vn){target=vn;sat=true}
+   out[k]=target;
+ }
+ return{y:out,sat,sr:srLim};
+}
+function spectrum(x,fs){
+ const n=x.length,r=new Float64Array(n),im=new Float64Array(n);let mean=0;for(const v of x)mean+=v;mean/=n;
+ for(let k=0;k<n;k++){const w=.5-.5*Math.cos(2*Math.PI*k/(n-1));r[k]=(x[k]-mean)*w}
+ fft(r,im);const f=[],m=[];for(let k=0;k<=n/2;k++){f.push(k*fs/n);let a=2*Math.hypot(r[k],im[k])/n;if(k===0||k===n/2)a/=2;m.push(a)}return{f,m};
+}
+function rms(x){let s=0;for(const v of x)s+=v*v;return Math.sqrt(s/x.length)}
+function snr(c,x){let ps=0,pn=0;for(let k=0;k<c.length;k++){ps+=c[k]*c[k];pn+=(x[k]-c[k])**2}return 10*Math.log10(ps/(pn+1e-12))}
+function fmtR(v){return v>=1000?(v/1000).toFixed(v>=10000?0:1)+' kΩ':v.toFixed(0)+' Ω'}
+function circuit(){
+ const p=css('--p'),s=css('--s'),ink=css('--ink');
+ const w=`stroke="${p}" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"`;
+ const txt=`font:14px system-ui;fill:${ink};font-weight:700;`;
+ const sm=`font:12px system-ui;fill:${ink};`;
+ 
+ const gnd = (x,y) => `<path d="M ${x} ${y} V ${y+12} M ${x-12} ${y+12} H ${x+12} M ${x-7} ${y+17} H ${x+7} M ${x-3} ${y+22} H ${x+3}" ${w}/>`;
+ const capH = (x,y) => `<path d="M ${x} ${y} H ${x+25} M ${x+25} ${y-15} V ${y+15} M ${x+35} ${y-15} V ${y+15} M ${x+35} ${y} H ${x+60}" ${w}/>`;
+ const capV = (x,y) => `<path d="M ${x} ${y} V ${y+25} M ${x-15} ${y+25} H ${x+15} M ${x-15} ${y+35} H ${x+15} M ${x} ${y+35} V ${y+60}" ${w}/>`;
+ const resH = (x,y) => `<path d="M ${x} ${y} H ${x+10} l 5 -10 l 10 20 l 10 -20 l 10 20 l 10 -20 l 5 10 H ${x+60}" ${w}/>`;
+ const resV = (x,y) => `<path d="M ${x} ${y} V ${y+10} l -10 5 l 20 10 l -20 10 l 20 10 l -10 5 V ${y+60}" ${w}/>`;
+ const dot = (x,y) => `<circle cx="${x}" cy="${y}" r="3.5" fill="${p}"/>`;
+
+ const isLow=state.filter==='low', isBand=state.filter==='band';
+ let passive = '';
+ 
+ if (isLow) {
+   passive = resH(130,70) + capV(250,70) + gnd(250,130) + dot(250,70) + 
+             `<path d="M 30 70 H 130 M 190 70 H 380" ${w}/>` +
+             `<text x="155" y="52" style="${txt}">R</text><text x="270" y="105" style="${txt}">C</text>`;
+ } else if (isBand) {
+   passive = capH(70,70) + resV(160,70) + gnd(160,130) + dot(160,70) +
+             resH(210,70) + capV(300,70) + gnd(300,130) + dot(300,70) +
+             `<path d="M 30 70 H 70 M 130 70 H 210 M 270 70 H 380" ${w}/>` +
+             `<text x="95" y="50" style="${txt}">C</text><text x="180" y="105" style="${txt}">R</text>` +
+             `<text x="235" y="52" style="${txt}">R</text><text x="320" y="105" style="${txt}">C</text>`;
+ } else {
+   passive = capH(130,70) + resV(250,70) + gnd(250,130) + dot(250,70) + 
+             `<path d="M 30 70 H 130 M 190 70 H 380" ${w}/>` +
+             `<text x="155" y="50" style="${txt}">C</text><text x="270" y="105" style="${txt}">R</text>`;
+ }
+
+ const opamp = `<path d="M 380 45 L 380 125 L 460 85 Z" fill="var(--card)" ${w}/>` +
+               `<text x="390" y="76" style="${txt}">+</text><text x="390" y="106" style="${txt}">−</text>` +
+               `<path d="M 460 85 H 560" ${w}/>` +
+               `<path d="M 500 85 V 150 M 420 150 H 500 M 360 150 V 100 H 380" ${w}/>` +
+               resH(360, 150) + resV(360, 150) + gnd(360, 210) + dot(500,85) + dot(360,150) +
+               `<text x="385" y="142" style="${txt}">R2</text><text x="325" y="185" style="${txt}">R1</text>`;
+
+ return `<svg viewBox="0 0 580 250" style="max-width:100%; height:100%; display:block; margin:auto;">
+   <circle cx="30" cy="70" r="4" fill="${s}"/><text x="10" y="55" style="${sm}">Vin</text>
+   ${passive}
+   ${opamp}
+   <circle cx="560" cy="85" r="4" fill="${s}"/><text x="530" y="70" style="${sm}">Vout</text>
+ </svg>`;
+}
+function layout(x,y){
+ const d=document.documentElement.dataset.theme==='dark',g=d?'#31415b':'#e2e8f0';
+ return{paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:d?'#111c2f':'#fff',font:{color:css('--ink')},margin:{l:65,r:20,t:24,b:55},hovermode:'closest',legend:{orientation:'h',y:1.14},uirevision:'keep',xaxis:{title:x,gridcolor:g,showgrid:true,automargin:true},yaxis:{title:y,gridcolor:g,showgrid:true,automargin:true}};
+}
+function syncOpamp(){
+ const key=$('opamp').value;
+ if(key!=='custom'){const o=opamps[key];$('gbw').value=o.gbw;$('sr').value=o.sr;$('vplus').value=o.vp;$('vminus').value=o.vn}
+}
+function update(){
+ try{
+   if($('link').checked){const f=1/(2*Math.PI*+$('R').value*(+$('C').value*1e-9));$('fc').value=Math.max(.5,Math.min(500,f))}
+   const A=gain(),bw=(+$('gbw').value*1e6)/A;
+   $('rV').textContent=fmtR(+$('R').value);$('cV').textContent=$('C').value+' nF';$('fcV').textContent=fc().toFixed(1)+' Hz';
+   $('r1V').textContent=fmtR(+$('R1').value);$('r2V').textContent=fmtR(+$('R2').value);$('gainV').textContent=A.toFixed(2)+' V/V';
+   $('gbwV').textContent=(+$('gbw').value).toFixed(1)+' MHz';$('srV').textContent=(+$('sr').value).toFixed(2)+' V/µs';
+   $('vplusV').textContent=(+$('vplus').value).toFixed(1)+' V';$('vminusV').textContent=(+$('vminus').value).toFixed(1)+' V';
+   $('ampV').textContent=(+$('amp').value).toFixed(2)+' V';$('finV').textContent=(+$('fin').value).toFixed(1)+' Hz';
+   $('fsV').textContent=$('fs').value+' Hz';$('durV').textContent=$('dur').value+' s';$('noiseLevelV').textContent=(+$('noiseLevel').value).toFixed(2);$('orderV').textContent=$('order').value;
+   $('circuit').innerHTML=circuit();
+
+   const s=signals(),ideal=filterFreq(s.input,s.fs,Hideal),preReal=filterFreq(s.input,s.fs,Hreal),lim=applyOutputLimits(preReal,s.fs),real=lim.y;
+   const td=[];
+   if($('showInput').checked)td.push({x:s.t,y:Array.from(s.input),name:'Entrada contaminada',mode:'lines',line:{color:css('--a'),width:1},opacity:.6});
+   if($('showIdeal').checked)td.push({x:s.t,y:Array.from(ideal),name:'Salida ideal',mode:'lines',line:{color:css('--g'),width:2}});
+   if($('showReal').checked)td.push({x:s.t,y:Array.from(real),name:'Salida real',mode:'lines',line:{color:css('--p'),width:2}});
+   const lt=layout('Tiempo (s)','Amplitud (V)');lt.xaxis.range=[0,Math.min(3,s.t[s.t.length-1])];
+   Plotly.react('time',td,lt,{responsive:true,displaylogo:false});
+
+   const si=spectrum(s.input,s.fs),so=spectrum(real,s.fs),maxF=Math.min(s.fs/2,500),e=si.f.findIndex(v=>v>maxF);
+   const fd=[{x:si.f.slice(0,e),y:si.m.slice(0,e),name:'Entrada',mode:'lines',fill:'tozeroy',opacity:.4,line:{color:css('--a')}},{x:so.f.slice(0,e),y:so.m.slice(0,e),name:'Salida real',mode:'lines',line:{color:css('--p'),width:2}}];
+   const lf=layout('Frecuencia (Hz)','Magnitud (V)');lf.xaxis.range=[0,maxF];
+   if($('markers').checked)lf.shapes=[{type:'line',x0:fc(),x1:fc(),y0:0,y1:1,yref:'paper',line:{color:css('--s'),dash:'dot',width:2}}];
+   Plotly.react('freq',fd,lf,{responsive:true,displaylogo:false});
+
+   const fb=[],di=[],dr=[],ph=[],f0=.1,f1=Math.max(1e6,bw*10,fc()*100);
+   for(let k=0;k<600;k++){const f=f0*Math.pow(f1/f0,k/599),hi=Hideal(f),hr=Hreal(f);fb.push(f);di.push(20*Math.log10(Math.max(hi.m,1e-8)));dr.push(20*Math.log10(Math.max(hr.m,1e-8)));ph.push(hr.p*180/Math.PI)}
+   
+   const htG = '<b>Frecuencia:</b> %{x:.2f} Hz<br><b>Ganancia:</b> %{y:.2f} dB<extra></extra>';
+   const htP = '<b>Frecuencia:</b> %{x:.2f} Hz<br><b>Fase:</b> %{y:.2f}°<extra></extra>';
+   const bd=[{x:fb,y:di,name:'Respuesta ideal',mode:'lines',line:{color:css('--g'),width:2,dash:'dash'}, hovertemplate:htG},{x:fb,y:dr,name:'Respuesta real',mode:'lines',line:{color:css('--p'),width:3}, hovertemplate:htG}];
+   if($('showPhase').checked)bd.push({x:fb,y:ph,name:'Fase real',mode:'lines',yaxis:'y2',line:{color:css('--s'),dash:'dot'}, hovertemplate:htP});
+   
+   let expTxt = `Filtro <b>${state.filter==='low'?'Pasabajas':state.filter==='high'?'Pasaaltas':'Pasabanda'}</b>. `;
+   if(state.filter==='low') expTxt += `Deja pasar las frecuencias desde 0 Hz hasta <b>${fc().toFixed(1)} Hz</b>. Frecuencias mayores se atenúan.`;
+   else if(state.filter==='high') expTxt += `Bloquea las frecuencias bajas y deja pasar las que superan los <b>${fc().toFixed(1)} Hz</b>.`;
+   else expTxt += `Deja pasar las frecuencias alrededor de <b>${fc().toFixed(1)} Hz</b>, bloqueando el resto.`;
+   if(bw < 10*fc()) expTxt += `<br><span class="warning">⚠️ Atención:</span> El Amplificador es muy lento (bajo GBW). La "Respuesta real" (azul) no logra seguir a la "Respuesta ideal" (verde).`;
+   $('bodeExplain').innerHTML = expTxt;
+   const lb=layout('Frecuencia (Hz)','Ganancia (dB)');lb.xaxis.type='log';lb.yaxis2={title:'Fase (°)',overlaying:'y',side:'right',showgrid:false,color:css('--s')};
+   if($('markers').checked)lb.shapes=[{type:'line',x0:fc(),x1:fc(),y0:0,y1:1,yref:'paper',line:{color:css('--s'),dash:'dot',width:2}},{type:'line',x0:bw,x1:bw,y0:0,y1:1,yref:'paper',line:{color:css('--bad'),dash:'dash',width:1.5}}];
+   Plotly.react('bode',bd,lb,{responsive:true,displaylogo:false});
+
+   const peakI=Math.max(...Array.from(ideal).map(Math.abs)),peakR=Math.max(...Array.from(real).map(Math.abs));
+   const err=Math.sqrt(Array.from(real).reduce((q,v,k)=>q+(v-ideal[k])**2,0)/real.length);
+   const sn0=snr(s.clean,s.input),sn1=snr(filterFreq(s.clean,s.fs,Hreal),real);
+   $('mFc').textContent=fc().toFixed(1)+' Hz';$('mGain').textContent=A.toFixed(2)+' V/V';$('mGainFc').textContent=(20*Math.log10(Math.max(Hreal(fc()).m,1e-8))).toFixed(2)+' dB';$('mCLBW').textContent=(bw>=1e6?(bw/1e6).toFixed(2)+' MHz':(bw/1e3).toFixed(1)+' kHz');$('mSlope').textContent=(20*+$('order').value)+' dB/déc';
+   const stateText=lim.sat?'Saturación':lim.sr?'Limitado por SR':bw<10*fc()?'BW insuficiente':'Operación adecuada';$('mState').textContent=stateText;
+   $('peakIdeal').textContent=peakI.toFixed(3)+' V';$('peakReal').textContent=peakR.toFixed(3)+' V';$('sat').textContent=lim.sat?'Sí':'No';$('srLimit').textContent=lim.sr?'Sí':'No';$('errRms').textContent=err.toFixed(4)+' V';$('snrGain').textContent=(sn1-sn0).toFixed(1)+' dB';
+   $('interpret').innerHTML=lim.sat?'<span class="warning">La salida está saturada.</span> Reduce la amplitud o la ganancia, o aumenta la alimentación.':lim.sr?'<span class="warning">El slew rate limita la señal.</span> Selecciona un AO más rápido o reduce frecuencia/amplitud.':bw<10*fc()?'<span class="warning">El GBW es limitado.</span> La respuesta real se aparta de la ideal cerca de la banda útil.':'Buen diseño: el AO reproduce razonablemente la respuesta ideal dentro de la banda seleccionada.';
+   state.last={A,bw,lim};
+   if(state.isChecking && typeof evaluateMission === 'function') evaluateMission();
+   updateSolutionGuide();
+ }catch(err){$('time').innerHTML='<div style="color:red;padding:20px"><b>Error:</b> '+err.message+'</div>';console.error(err)}
+}
+
+function updateSolutionGuide(){
+  const s = $('source').value, n = $('noiseType').value, lvl = +$('noiseLevel').value;
+  const g = $('solutionGuide');
+  if(lvl === 0 || n === 'none') { g.style.display = 'none'; return; }
+  g.style.display = 'block';
+  let txt = `<b>💡 Análisis de Señal:</b> `;
+  if(s === 'ecg' && n === 'electric') txt += `El ruido eléctrico de 60Hz distorsiona el complejo QRS. Dado que la información útil del ECG está por debajo de ~40Hz, la solución recomendada es un <b>Filtro Pasabajas con fc ≈ 40 Hz</b> para atenuar la interferencia sin dañar la señal.`;
+  else if(s === 'resp' && n === 'traffic') txt += `La respiración (~0.3Hz) y el ruido de tráfico (muy baja frecuencia) se solapan. Un <b>Filtro Pasaaltas con fc ≈ 0.1 Hz</b> puede ayudar a estabilizar la línea base, pero un <b>Pasabajas estricto (fc ≈ 1 Hz)</b> es vital para limpiarla.`;
+  else if(s === 'emg' && n === 'electric') txt += `El EMG contiene información de alta frecuencia (hasta 500Hz). El ruido de 60Hz cae justo en medio. Se recomienda usar un <b>Filtro Rechazabanda en 60Hz (Notch)</b>. Como alternativa básica, un <b>Pasaaltas con fc ≈ 80 Hz</b> elimina el ruido pero sacrifica la parte baja del EMG.`;
+  else if(s === 'ecg' && n === 'traffic') txt += `El ruido de tráfico causa "deriva de línea base" (la señal sube y baja lentamente). Solución: un <b>Filtro Pasaaltas con fc ≈ 0.5 Hz</b>.`;
+  else if(n === 'nature' || n === 'voices') txt += `El ruido blanco/rosa y las voces son de banda ancha. Usa un <b>Filtro Pasabanda</b> que se ajuste exactamente al rango principal de tu señal para bloquear todo lo demás.`;
+  else if(n === 'emg') txt += `El ruido electromagnético de alta frecuencia se puede limpiar fácilmente con un <b>Filtro Pasabajas</b> ajustado al límite superior de la señal de interés.`;
+  else txt += `Configura un filtro que deje pasar la frecuencia principal de tu señal y bloquee la región donde domina el ruido.`;
+  g.innerHTML = txt;
+}
+
+function evaluateMission(){
+  if(!state.isChecking) return;
+  const m=state.mission, L=state.last;
+  let checks = [];
+  
+  if(m===0){
+    checks.push(state.filter==='low' ? '✅ Filtro configurado como Pasabajas.' : '❌ Filtro incorrecto (selecciona Pasabajas).');
+    const f=fc(); checks.push(Math.abs(f-40)<=5 ? `✅ Frecuencia de corte (fc) correcta (~${f.toFixed(1)} Hz).` : `❌ fc está en ${f.toFixed(1)} Hz (ajusta R o C para llegar a ~40 Hz).`);
+    checks.push((L.A>=4 && L.A<=6) ? `✅ Ganancia AF correcta (${L.A.toFixed(1)} V/V).` : `❌ Ganancia actual es ${L.A.toFixed(1)} V/V (ajusta R1 y R2 para estar entre 4 y 6).`);
+  }
+  else if(m===1){
+    checks.push(state.filter==='high' ? '✅ Filtro configurado como Pasaaltas.' : '❌ Filtro incorrecto (selecciona Pasaaltas).');
+    const f=fc(); checks.push((f>=0.5 && f<=1.5) ? `✅ Frecuencia de corte correcta (~${f.toFixed(1)} Hz).` : `❌ fc está en ${f.toFixed(1)} Hz (ajusta R o C para llegar a ~1 Hz).`);
+    checks.push(Math.abs(L.A-2)<0.15 ? `✅ Ganancia AF correcta (${L.A.toFixed(1)} V/V).` : `❌ Ganancia actual es ${L.A.toFixed(1)} V/V (ajusta R1 y R2 para que sea 2 V/V).`);
+  }
+  else if(m===2){
+    checks.push(!L.lim.sat ? '✅ Salida libre de saturación por voltaje.' : '❌ La salida está saturada. Reduce ganancia/amplitud o aumenta alimentación.');
+  }
+  else if(m===3){
+    checks.push(L.A>=10 ? `✅ Ganancia alta lograda (${L.A.toFixed(1)} V/V).` : `❌ Ganancia muy baja (${L.A.toFixed(1)} V/V). Aumenta R2 para llegar a ≥ 10.`);
+    checks.push(L.bw>100000 ? `✅ Ancho de banda de lazo cerrado adecuado (${(L.bw/1e3).toFixed(1)} kHz).` : `❌ Ancho de banda muy corto (${(L.bw/1e3).toFixed(1)} kHz). Selecciona un AO más rápido (mayor GBW).`);
+  }
+  
+  const allOk = checks.length > 0 && checks.every(c => c.startsWith('✅'));
+  const html = `<ul style="list-style:none;padding:0;margin:10px 0;font-size:0.9rem;line-height:1.6">` + 
+               checks.map(c => `<li style="margin-bottom:4px;color:${c.startsWith('✅')?'var(--ok)':'var(--bad)'};font-weight:600">${c}</li>`).join('') + 
+               `</ul>` + (allOk ? `<div style="color:var(--ok);font-size:1.1rem;font-weight:800;margin-top:10px;">🎉 ¡Misión Completada!</div>` : '');
+  
+  $('feedback').innerHTML = html;
+}
+function setFilter(t){state.filter=t;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===t));update()}
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>setFilter(b.dataset.filter));
+['order','R','C','fc','link','R1','R2','gbw','sr','vplus','vminus','realLimits','amp','fin','fs','dur','noiseType','noiseLevel','showInput','showIdeal','showReal','showPhase','markers'].forEach(id=> { $(id).addEventListener('input',update); $(id).addEventListener('change',update); });
+
+$(`source`).onchange = () => {
+    const val = $(`source`).value;
+    if (val === 'ecg') {
+        $(`amp`).value = 1; $(`noiseType`).value = 'none'; $(`noiseLevel`).value = 0;
+        setFilter('low'); $(`fc`).value = 40; $(`R1`).value = 1000; $(`R2`).value = 4000;
+    } else if (val === 'emg') {
+        $(`amp`).value = 1; $(`noiseType`).value = 'none'; $(`noiseLevel`).value = 0;
+        setFilter('high'); $(`fc`).value = 20; $(`R1`).value = 1000; $(`R2`).value = 4000;
+    } else if (val === 'resp') {
+        $(`amp`).value = 1; $(`noiseType`).value = 'none'; $(`noiseLevel`).value = 0;
+        setFilter('low'); $(`fc`).value = 1; $(`R1`).value = 1000; $(`R2`).value = 10000;
+    } else if (val === 'sine') {
+        $(`amp`).value = 1; $(`fin`).value = 10; $(`noiseType`).value = 'none'; $(`noiseLevel`).value = 0;
+        setFilter('low'); $(`fc`).value = 15; $(`R1`).value = 1000; $(`R2`).value = 1000;
+    } else if (val === 'square') {
+        $('amp').value = 1; $('fin').value = 10; $('noiseType').value = 'none'; $('noiseLevel').value = 0;
+        setFilter('low'); $('fc').value = 150; $('R1').value = 1000; $('R2').value = 1000;
+    } else if (val === 'multi') {
+        $('amp').value = 1; $('fin').value = 10; $('noiseType').value = 'none'; $('noiseLevel').value = 0;
+        setFilter('low'); $('fc').value = 60; $('R1').value = 1000; $('R2').value = 1000;
+    }
+    ['preTraffic','preElec','preBand','pre60Hz'].forEach(b => $(b).classList.remove('primary'));
+    document.querySelectorAll('#noiseButtons .chip').forEach(c=>c.classList.remove('active'));
+    document.querySelector('#noiseButtons .chip[data-noise="none"]').classList.add('active');
+    $('opamp').value = 'ideal'; syncOpamp();
+    update();
+};
+
+document.querySelectorAll('#noiseButtons .chip').forEach(b=>{
+    b.onclick=()=>{
+        document.querySelectorAll('#noiseButtons .chip').forEach(c=>c.classList.remove('active'));
+        b.classList.add('active');
+        $('noiseType').value = b.dataset.noise;
+        update();
+    }
+});
+
+$('opamp').onchange=()=>{syncOpamp();update()};
+$('theme').onclick=()=>{const d=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=d?'':'dark';$('theme').textContent=d?'Modo oscuro':'Modo claro';update()};
+$('reset').onclick=()=>location.reload();
+$('guided').onclick=()=>{$('status').textContent=$('status').textContent.includes('lista')?'● Sigue la misión activa':'● Simulación lista'};
+function setPreset(id) {
+    ['preTraffic','preElec','preBand','pre60Hz'].forEach(b => $(b).classList.remove('primary'));
+    $(id).classList.add('primary');
+}
+$('preTraffic').onclick=()=>{setPreset('preTraffic'); $('source').value='ecg';$('amp').value=0.5;$('noiseType').value='traffic';$('noiseLevel').value=0.4;$('R1').value=1000;$('R2').value=1000;setFilter('high');$('fc').value=5;$('opamp').value='ad620';syncOpamp();update()};
+$('preElec').onclick=()=>{setPreset('preElec'); $('source').value='sine';$('amp').value=1;$('fin').value=10;$('noiseType').value='emg';$('noiseLevel').value=0.3;$('R1').value=1000;$('R2').value=1000;setFilter('low');$('fc').value=40;$('opamp').value='lm324';syncOpamp();update()};
+$('preBand').onclick=()=>{setPreset('preBand'); $('source').value='sine';$('amp').value=1;$('fin').value=60;$('noiseType').value='voices';$('noiseLevel').value=0.6;$('R1').value=1000;$('R2').value=9000;setFilter('band');$('fc').value=60;$('opamp').value='lm741';syncOpamp();update()};
+$('pre60Hz').onclick=()=>{setPreset('pre60Hz'); $('source').value='ecg';$('amp').value=0.5;$('noiseType').value='electric';$('noiseLevel').value=0.25;$('R1').value=1000;$('R2').value=1000;setFilter('low');$('fc').value=30;$('opamp').value='ideal';syncOpamp();update()};
+
+function mission(){
+  $('missionT').textContent=missions[state.mission][0];
+  $('missionD').textContent=missions[state.mission][1];
+  state.isChecking=false;
+  $('feedback').innerHTML='';
+}
+$('next').onclick=()=>{state.mission=(state.mission+1)%missions.length;mission();};
+$('check').onclick=()=>{
+  state.isChecking=true;
+  evaluateMission();
+};
+mission();setFilter('low');
+</script>
+
+<div id="global-tooltip"></div>
+<script>
+const gt = document.getElementById('global-tooltip');
+document.querySelectorAll('.info-btn').forEach(btn => {
+  btn.onmouseenter = () => {
+    gt.innerHTML = btn.dataset.tooltip;
+    const rect = btn.getBoundingClientRect();
+    // Position to the right of the button
+    gt.style.left = (rect.right + 15) + 'px';
+    gt.style.top = (rect.top + rect.height / 2) + 'px';
+    gt.style.transform = 'translateY(-50%)';
+    gt.classList.add('visible');
+  };
+  btn.onmouseleave = () => gt.classList.remove('visible');
+  btn.onfocus = btn.onmouseenter;
+  btn.onblur = btn.onmouseleave;
+});
+</script>
+
+</body>
+</html>

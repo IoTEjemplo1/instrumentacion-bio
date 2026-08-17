@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explorador de señales DC y AC</title>
+<style>
+:root{--b:#0b3b66;--b2:#17679e;--g:#d6a84b;--i:#1f2937;--m:#667085}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#eef3f8;color:var(--i)}
+.app{max-width:1180px;margin:auto;padding:22px}.hero{background:linear-gradient(135deg,var(--b),var(--b2));color:#fff;padding:24px 28px;border-radius:22px}
+.hero h1{margin:0 0 8px}.hero p{margin:0;line-height:1.5}.grid{display:grid;grid-template-columns:335px 1fr;gap:18px;margin-top:18px}
+.panel{background:#fff;border:1px solid #dbe4ee;border-radius:20px;padding:19px;box-shadow:0 10px 25px #1f293710}
+h2{margin:0 0 16px;color:var(--b);font-size:1.15rem}.control{margin-bottom:16px}label{display:flex;justify-content:space-between;font-weight:700;font-size:.93rem;margin-bottom:7px}
+.value{color:var(--b)}input[type=range]{width:100%;accent-color:var(--b)}.seg,.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{border:1px solid #c9d5e1;background:#fff;padding:11px;border-radius:12px;font-weight:800;cursor:pointer}.active{background:var(--b);color:#fff;border-color:var(--b)}
+.plot{border:1px solid #d9e4ee;border-radius:17px;overflow:hidden;background:#fbfdff}canvas{width:100%;height:420px;display:block}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.metric{background:#f7fafc;border:1px solid #dce6ef;border-radius:14px;padding:12px}
+.metric span{display:block;color:var(--m);font-size:.78rem;margin-bottom:5px}.metric strong{color:var(--b)}
+.note,.eq,.challenge{margin-top:14px;border-radius:14px;padding:13px;line-height:1.5}.note{background:#eaf5ff;border:1px solid #bfdcf1}.eq{background:#f7fafc;border:1px solid #dce6ef;font-family:Georgia,serif}
+.challenge{background:#fff9eb;border:1px solid #eedaa5}@media(max-width:900px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.app{padding:12px}}
+</style></head>
+<body><main class="app">
+<section class="hero"><h1>Explorador interactivo de señales DC y AC</h1><p>Modifica nivel DC, amplitud, frecuencia y fase. Observa en tiempo real el valor instantáneo, período, valor eficaz y desplazamiento de la señal.</p></section>
+<section class="grid"><aside class="panel"><h2>Configuración</h2>
+<div class="control"><label>Tipo de señal</label><div class="seg"><button id="dc" class="active">Continua (DC)</button><button id="ac">Alterna (AC)</button></div></div>
+<div class="control"><label>Nivel DC <span class="value" id="ov">5,0 V</span></label><input id="o" type="range" min="-10" max="10" step=".1" value="5"></div>
+<div class="control acx"><label>Amplitud pico <span class="value" id="av">5,0 V</span></label><input id="a" type="range" min="0" max="12" step=".1" value="5"></div>
+<div class="control acx"><label>Frecuencia <span class="value" id="fv">2,0 Hz</span></label><input id="f" type="range" min=".2" max="20" step=".1" value="2"></div>
+<div class="control acx"><label>Fase <span class="value" id="pv">0°</span></label><input id="p" type="range" min="-180" max="180" step="5" value="0"></div>
+<div class="control"><label>Velocidad <span class="value" id="sv">1,0×</span></label><input id="s" type="range" min="0" max="2" step=".1" value="1"></div>
+<div class="row"><button id="run" class="active">Animación activa</button><button id="grid" class="active">Cuadrícula activa</button></div>
+<div class="challenge"><b>Reto:</b> cambia la frecuencia de 2 Hz a 10 Hz. ¿Qué sucede con el período y con el número de ciclos visibles?</div>
+</aside>
+<section class="panel"><h2>Osciloscopio virtual</h2><div class="plot"><canvas id="cv"></canvas></div>
+<div class="metrics">
+<div class="metric"><span>Valor instantáneo</span><strong id="inst"></strong></div><div class="metric"><span>Valor pico</span><strong id="peak"></strong></div>
+<div class="metric"><span>Valor RMS</span><strong id="rms"></strong></div><div class="metric"><span>Valor promedio</span><strong id="avg"></strong></div>
+<div class="metric"><span>Frecuencia</span><strong id="fo"></strong></div><div class="metric"><span>Período</span><strong id="per"></strong></div>
+<div class="metric"><span>Fase</span><strong id="po"></strong></div><div class="metric"><span>Polaridad</span><strong id="pol"></strong></div>
+</div><div class="note" id="note"></div><div class="eq" id="eq"></div></section></section></main>
+<script>
+const $=x=>document.getElementById(x),cv=$('cv'),x=cv.getContext('2d');let mode='dc',go=1,gr=1,t=0,last=performance.now();
+const fmt=(n,d=2)=>Number(n).toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+function size(){let r=cv.getBoundingClientRect(),q=devicePixelRatio||1;cv.width=r.width*q;cv.height=r.height*q;x.setTransform(q,0,0,q,0,0)}addEventListener('resize',size);size();
+function v(){return{o:+$('o').value,a:+$('a').value,f:+$('f').value,p:+$('p').value*Math.PI/180,s:+$('s').value}}
+['o','a','f','p','s'].forEach(k=>$(k).oninput=labels);
+$('dc').onclick=()=>set('dc');$('ac').onclick=()=>set('ac');$('run').onclick=()=>{go=!go;$('run').textContent=go?'Animación activa':'Animación pausada';$('run').classList.toggle('active',go)}
+$('grid').onclick=()=>{gr=!gr;$('grid').textContent=gr?'Cuadrícula activa':'Cuadrícula oculta';$('grid').classList.toggle('active',gr)}
+function set(m){mode=m;$('dc').classList.toggle('active',m==='dc');$('ac').classList.toggle('active',m==='ac');document.querySelectorAll('.acx').forEach(e=>e.style.opacity=m==='ac'?1:.35);labels()}
+function labels(){let z=v();$('ov').textContent=fmt(z.o,1)+' V';$('av').textContent=fmt(z.a,1)+' V';$('fv').textContent=fmt(z.f,1)+' Hz';$('pv').textContent=fmt(+$('p').value,0)+'°';$('sv').textContent=fmt(z.s,1)+'×';text()}
+function text(){let z=v(),ins,pk,rms,av,f,T,pol;if(mode==='dc'){ins=z.o;pk=Math.abs(z.o);rms=pk;av=z.o;f=0;T=null;pol=z.o>0?'Positiva constante':z.o<0?'Negativa constante':'Cero';$('note').textContent='Una señal DC conserva su valor en el tiempo. Su frecuencia es 0 Hz y no tiene período.';$('eq').innerHTML='<b>Señal continua:</b><br>v(t) = V<sub>DC</sub> = '+fmt(z.o,1)+' V'}
+else{ins=z.o+z.a*Math.sin(2*Math.PI*z.f*t+z.p);pk=Math.abs(z.o)+z.a;rms=Math.sqrt(z.o*z.o+z.a*z.a/2);av=z.o;f=z.f;T=1/z.f;pol=(z.o-z.a<0&&z.o+z.a>0)?'Alternante bipolar':'AC con offset';$('note').textContent='La frecuencia indica ciclos por segundo; el período es la duración de un ciclo. La fase desplaza horizontalmente la onda.';$('eq').innerHTML='<b>Señal senoidal:</b><br>v(t) = '+fmt(z.o,1)+' + '+fmt(z.a,1)+'·sen(2π·'+fmt(z.f,1)+'·t + '+fmt(+$('p').value,0)+'°) V'}
+$('inst').textContent=fmt(ins)+' V';$('peak').textContent=fmt(pk)+' V';$('rms').textContent=fmt(rms)+' V';$('avg').textContent=fmt(av)+' V';$('fo').textContent=f?fmt(f,1)+' Hz':'0 Hz';$('per').textContent=T?(T<1?fmt(T*1000)+' ms':fmt(T)+' s'):'No aplica';$('po').textContent=mode==='ac'?fmt(+$('p').value,0)+'°':'No aplica';$('pol').textContent=pol}
+function draw(){let now=performance.now(),dt=(now-last)/1000;last=now;if(go)t+=dt*v().s;let w=cv.clientWidth,h=cv.clientHeight,z=v(),ym=q=>h-(q+14)/28*h;x.clearRect(0,0,w,h);x.fillStyle='#fbfdff';x.fillRect(0,0,w,h);
+if(gr){x.strokeStyle='#dce7f0';for(let i=0;i<=10;i++){let q=i*w/10;x.beginPath();x.moveTo(q,0);x.lineTo(q,h);x.stroke()}for(let i=0;i<=8;i++){let q=i*h/8;x.beginPath();x.moveTo(0,q);x.lineTo(w,q);x.stroke()}}
+x.strokeStyle='#60758b';x.beginPath();x.moveTo(0,ym(0));x.lineTo(w,ym(0));x.stroke();x.fillStyle='#526375';x.font='12px Segoe UI';x.fillText('Voltaje (V)',10,18);x.fillText('Tiempo →',w-70,h-10);
+x.strokeStyle='#0b3b66';x.lineWidth=3;x.beginPath();let win=mode==='ac'?Math.max(.6,5/z.f):5;for(let q=0;q<=w;q++){let tt=t-win+q/w*win,y=mode==='dc'?z.o:z.o+z.a*Math.sin(2*Math.PI*z.f*tt+z.p);q?x.lineTo(q,ym(y)):x.moveTo(q,ym(y))}x.stroke();text();requestAnimationFrame(draw)}
+set('dc');draw();
+</script></body></html>

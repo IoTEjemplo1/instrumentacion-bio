@@ -1,0 +1,1 @@
+Lab comportamiento de una señal en AC y DC de acuerdo a cada componente (RLC

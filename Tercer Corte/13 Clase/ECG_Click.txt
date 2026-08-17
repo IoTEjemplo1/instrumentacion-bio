@@ -1,0 +1,21 @@
+// definición de variables y pines
+const int analogInPin = A0;  // pin 
+
+int sensorValue = 0;        // inicia valor del sensor 
+
+void setup() {
+// configuración del puesrto serie
+Serial.begin(9600);
+}
+
+void loop() {
+// lee el valor del pin analogógico in value:
+sensorValue = analogRead(analogInPin);
+// determina el rango del valor de muestreo
+float outputValue = map(sensorValue, 0, 1023, 0, 255);
+// muestra el valor 
+Serial.println(outputValue);
+
+// tiempo de espera antes de la lectura del siguinete loop 
+delay(30);
+}

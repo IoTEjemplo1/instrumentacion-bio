@@ -1,0 +1,423 @@
+/* 
+  @file style.css
+  @description Hoja de estilos de personalización y anulación de Bootstrap 5.
+  Establece variables CSS para modo claro y oscuro, diseños SPA con barra lateral colapsable,
+  componentes interactivos del campus virtual y estilos de impresión específicos para certificados.
+  @author Antigravity Pair Programmer
+*/
+
+:root {
+  /* Fuentes */
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-title: 'Outfit', sans-serif;
+
+  /* Tema Claro */
+  --bg-primary: #f4f6f9;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f9fa;
+  --bg-sidebar: #002244; /* Azul Javeriana */
+  --bg-sidebar-hover: #003366;
+  --bg-sidebar-active: #c5a059;
+  
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-light: #ffffff;
+
+  --color-primary: #003b71; /* Azul Institucional */
+  --color-secondary: #c5a059; /* Dorado */
+  --color-secondary-light: #dfc48c;
+  --color-accent: #00a8e8; /* Azul tecnológico */
+  
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  
+  /* Statuses */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+  --status-info: #3b82f6;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s ease;
+}
+
+[data-theme='dark'] {
+  /* Tema Oscuro */
+  --bg-primary: #0a192f;      /* Fondo marino profundo */
+  --bg-secondary: #172a45;    /* Superficie marina */
+  --bg-tertiary: #1b304f;     /* Superficie marina clara */
+  --bg-sidebar: #020c1b;      /* Sidebar oscuro */
+  --bg-sidebar-hover: #172a45;
+  --bg-sidebar-active: #c5a059;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-light: #ffffff;
+
+  --color-primary: #003b71; 
+  --color-secondary: #c5a059;
+  --color-secondary-light: #e6c887;
+  --color-accent: #38bdf8; 
+
+  --border-color: #233554;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+  --shadow-md: 0 8px 16px rgba(0,0,0,0.3);
+  --shadow-lg: 0 16px 24px rgba(0,0,0,0.4);
+
+  --glass-bg: rgba(23, 42, 69, 0.8);
+  --glass-border: rgba(35, 53, 84, 0.5);
+}
+
+/* Configuración General */
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Scrollbar Personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-tertiary);
+}
+
+/* Layout de la Aplicación SPA */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+aside {
+  width: 280px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: var(--bg-sidebar);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  z-index: 100;
+  overflow-y: auto;
+  transition: transform var(--transition-normal);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin-left: 280px;
+  transition: margin-left var(--transition-normal);
+}
+
+.content-wrapper {
+  flex: 1;
+  padding: 2rem 3rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Botón flotante para menú en móviles */
+.mobile-menu-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: #fff;
+  border: 2px solid var(--color-secondary);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  cursor: pointer;
+  font-size: 1.3rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+.mobile-menu-toggle:active {
+  transform: scale(0.9);
+}
+
+/* Responsividad para móviles y tabletas */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+  }
+  aside {
+    transform: translateX(-100%);
+  }
+  aside.open {
+    transform: translateX(0);
+  }
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  .content-wrapper {
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* Efectos */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+/* Botones Personalizados */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.4rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--text-light);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 59, 113, 0.3);
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: var(--text-light);
+}
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+  filter: brightness(1.1);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+.btn-outline:hover {
+  background-color: var(--border-color);
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Tarjetas */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-secondary);
+}
+
+/* Estilo de Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-info { background: rgba(59, 130, 246, 0.15); color: var(--status-info); }
+.badge-success { background: rgba(16, 185, 129, 0.15); color: var(--status-success); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--status-warning); }
+.badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--status-danger); }
+.badge-gold { background: rgba(197, 160, 89, 0.15); color: var(--color-secondary); }
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+/* Timeline */
+.timeline-container {
+  position: relative;
+  padding-left: 2rem;
+  border-left: 2px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.timeline-item {
+  position: relative;
+}
+.timeline-dot {
+  position: absolute;
+  left: -2.55rem;
+  top: 0.25rem;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary);
+  border: 4px solid var(--bg-secondary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* Callouts */
+.callout {
+  border-left: 5px solid var(--color-primary);
+  background-color: var(--bg-tertiary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  display: flex;
+  gap: 1rem;
+}
+.callout-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.callout-content {
+  flex: 1;
+}
+.callout-title {
+  font-weight: 700;
+  font-family: var(--font-title);
+  margin-bottom: 0.25rem;
+}
+.callout.tip { border-left-color: var(--status-success); background-color: rgba(16, 185, 129, 0.05); }
+.callout.warning { border-left-color: var(--status-warning); background-color: rgba(245, 158, 11, 0.05); }
+.callout.clinical { border-left-color: var(--color-secondary); background-color: rgba(197, 160, 89, 0.05); }
+.callout.danger { border-left-color: var(--status-danger); background-color: rgba(239, 68, 68, 0.05); }
+
+/* Pestañas de clases */
+.nav-tabs-custom {
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+}
+.nav-link-custom {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  font-size: 0.9rem;
+}
+.nav-link-custom:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+.nav-link-custom.active {
+  background-color: var(--color-secondary);
+  color: #fff;
+}
+
+/* Custom inputs slider */
+input[type="range"] {
+  height: 6px;
+  -webkit-appearance: none;
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Media query especial para impresion de diploma */
+@media print {
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+  aside, .main-content > header, .mobile-menu-toggle, .btn, hr, .card:not(.printable-certificate) {
+    display: none !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  .content-wrapper {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .printable-certificate {
+    border: 10px double #c5a059 !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    page-break-inside: avoid;
+  }
+}
