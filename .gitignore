@@ -1,6 +1,43 @@
+# Node modules y entornos de python
 node_modules/
 __pycache__/
-*.zip
-.vscode/
+venv/
+.venv/
+
+# Archivos de sistema y editores
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Archivos de registro y temporales
 *.log
+*.tmp
+*.temp
+temp/
+tmp/
+.cache/
+
+# Archivos compilados o empaquetados
+*.zip
+*.tar.gz
+*.rar
+dist/
+build/
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Datos sensibles de estudiantes
+*.xlsx
+*.xls
+*Listado*.txt
+*estudiantes*.txt
+
+# Archivos temporales generados por scripts del proyecto
+*_temp.js
+*_temp.mjs
+temp_*.js
+temp_*.mjs
