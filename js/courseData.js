@@ -1321,10 +1321,8 @@ export const courseData = {
           ],
           simulator: 'laboratorio_virtual_filtros_activos.html',
           resources: [
-            { name: "4_Filtros_activos.pptx", type: "pptx", size: "3.5 MB" },
-            { name: "A Survey of Impedance Measurement.pdf", type: "pdf", size: "611 KB" },
-            { name: "Current comparator for both AC and DC.pdf", type: "pdf", size: "1.2 MB" },
-            { name: "“Gettin’ In Tune” with the EMI Filter.pdf", type: "pdf", size: "1.6 MB" }
+            { name: "4_Filtros_activos.pptx", type: "pptx", size: "1.2 MB" },
+            { name: "4_Filtros_activos.pdf", type: "pdf", size: "1.0 MB" }
           ],
           quizzes: [
             {
