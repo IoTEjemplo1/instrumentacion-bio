@@ -1230,7 +1230,7 @@ export const courseData = {
         },
         {
           id: "clase-05",
-          isEnabled: false,
+          isEnabled: true,
           number: 5,
           title: "Filtros Activos",
           duration: "4 horas",
