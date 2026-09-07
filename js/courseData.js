@@ -1404,7 +1404,7 @@ export const courseData = {
       topics: [
         {
           id: "clase-06",
-          isEnabled: false,
+          isEnabled: true,
           number: 6,
           title: "Instrumentación de Temperatura",
           duration: "4 horas",
