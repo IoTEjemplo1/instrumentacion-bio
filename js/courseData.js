@@ -24,11 +24,11 @@ export const courseData = {
   },
   professor: {
     name: "Pedro Antonio Aya Parra",
-    title: "Profesor Asociado",
-    department: "Departamento de Ingeniería Biomédica",
-    email: "pedro.antonio@javeriana.edu.co",
+    title: "Profesor hora cátedra",
+    department: "Departamento de Bioingeniería",
+    email: "pedroa.aya@javeriana.edu.co",
     office: "Edificio José Gabriel Maldonado, S.J. - Piso 4",
-    bio: "Ingeniero Biomédico con doctorado en Ingeniería y especialización en el diseño de hardware médico de bajo consumo, IoT médico y procesamiento digital de señales en tiempo real.",
+    bio: "Ingeniero Biomédico, magister en ingeniría eleçtrica y estudiante de doctorado en Ingeniería eléctrica. Cuneta con amplia experiencia en el diseño de hardware médico de bajo consumo, IoT médico y procesamiento digital de señales en tiempo real.",
     researchLines: [
       "Sistemas Embebidos para Dispositivos Médicos (IoMT)",
       "Clasificación de Señales Bioeléctricas mediante TinyML",
@@ -1595,7 +1595,7 @@ export const courseData = {
         },
         {
           id: "clase-07",
-          isEnabled: false,
+          isEnabled: true,
           number: 7,
           title: "Sensores Piezoeléctricos y Ultrasonido",
           duration: "4 horas",
@@ -1707,9 +1707,9 @@ export const courseData = {
           ],
           simulator: 'piezolab_bioinstrumentacion_v2.html',
           resources: [
-            { name: "Piezoelectric Chemosensors and Biosensors in Medical Diagnostics.pdf", type: "pdf", size: "1.8 MB" },
-            { name: "Recent development of piezoelectric biosensors.pdf", type: "pdf", size: "2.1 MB" },
-            { name: "Flexible piezoelectric materials and strain sensors for wearable electronics and artificial intelligence applications.pdf", type: "pdf", size: "2.4 MB" }
+            { name: "Piezoelectric Chemosensors and Biosensors in Medical Diagnostics.pdf", type: "pdf", size: "1.8 MB", url: "./public/Piezoelectric Chemosensors and Biosensors.pdf" },
+            { name: "Recent development of piezoelectric biosensors.pdf", type: "pdf", size: "2.1 MB", url: "./public/Recent development of piezoelectric biosensors.pdf" },
+            { name: "Flexible piezoelectric materials and strain sensors for wearable electronics and artificial intelligence applications.pdf", type: "pdf", size: "2.4 MB", url: "./public/Flexible piezoelectric materials.pdf" }
           ],
           quizzes: [
             {
