@@ -639,6 +639,29 @@ void loop() {
         `;
       }
 
+      let papersHTML = '';
+      if (currentTopic.papers && currentTopic.papers.length > 0) {
+        papersHTML = `
+          <div class="d-flex flex-column gap-2 mt-4 pt-3 border-top">
+            <h3 class="h6 text-primary fw-bold m-0">Artículos Académicos (Papers)</h3>
+            ${currentTopic.papers.map(paper => {
+              return `
+                <div class="card p-3 d-flex flex-row justify-content-between align-items-center flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-3">
+                    <span style="font-size: 2.2rem;">📄</span>
+                    <div>
+                      <div class="fw-bold small" style="color: var(--text-primary);">${paper.title}</div>
+                      ${paper.description ? `<div class="small text-secondary" style="font-size: 0.75rem;">${paper.description}</div>` : ''}
+                    </div>
+                  </div>
+                  ${paper.url ? `<a href="${paper.url}" target="_blank" class="btn btn-sm btn-outline px-3" style="font-size: 0.8rem;">Ver Paper</a>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
       let embedsHTML = '';
       if (currentTopic.simulator) {
         const simulators = Array.isArray(currentTopic.simulator) ? currentTopic.simulator : [currentTopic.simulator];
@@ -688,6 +711,7 @@ void loop() {
         <div class="animate-fade-in d-flex flex-column gap-3">
           ${labsHTML}
           ${codeHTML}
+          ${papersHTML}
           ${embedsHTML}
         </div>
       `;

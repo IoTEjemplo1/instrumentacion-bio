@@ -1705,6 +1705,13 @@ export const courseData = {
               description: "Implementación de un circuito acondicionador de carga para captar el pulso cardiaco radial usando un transductor piezoeléctrico."
             }
           ],
+          papers: [
+            {
+              title: "Tencon_Paper_ResearchGate-1",
+              description: "Comparison of sensors performance for the development of wrist pulse acquisition system.",
+              url: "./public/Tencon_Paper_ResearchGate-1.pdf"
+            }
+          ],
           simulator: 'piezolab_bioinstrumentacion_v2.html',
           resources: [
             { name: "Piezoelectric Chemosensors and Biosensors in Medical Diagnostics.pdf", type: "pdf", size: "1.8 MB", url: "./public/Piezoelectric Chemosensors and Biosensors.pdf" },
