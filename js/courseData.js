@@ -1702,6 +1702,7 @@ export const courseData = {
             {
               title: "Laboratorio 6: Detección de Pulso y Presión con Sensores Piezoeléctricos",
               guide: "Lab_presion_sanguinea_piezo.docx",
+              url: "./Segundo Corte/08 Clase/Lab_presion_sanguinea_piezo.docx",
               description: "Implementación de un circuito acondicionador de carga para captar el pulso cardiaco radial usando un transductor piezoeléctrico."
             }
           ],
@@ -1884,6 +1885,7 @@ export const courseData = {
             {
               title: "Laboratorio 7: Celda de Carga y Báscula de Precisión",
               guide: "Lab_Presion_Galga.docx",
+              url: "./Segundo Corte/09 Clase/Lab_Presion_Galga.docx",
               description: "Acondicionamiento de una celda de carga de 4 galgas usando el circuito integrado de precisión HX711 acoplado a un microcontrolador."
             }
           ],
