@@ -1790,7 +1790,7 @@ export const courseData = {
         },
         {
           id: "clase-08",
-          isEnabled: false,
+          isEnabled: true,
           number: 8,
           title: "Instrumentación de Fuerza y Presión (Galgas)",
           duration: "4 horas",
