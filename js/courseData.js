@@ -1980,7 +1980,7 @@ export const courseData = {
         },
         {
           id: "clase-09",
-          isEnabled: false,
+          isEnabled: true,
           number: 9,
           title: "Instrumentación de Gases",
           duration: "4 horas",
@@ -2057,6 +2057,7 @@ export const courseData = {
             {
               title: "Laboratorio 8: Sensor de Gas y Monitoreo de Parámetros de Respiración",
               guide: "Lab_Gases.docx",
+              url: "./Segundo Corte/10 Clase/Lab_Gases.docx",
               description: "Caracterización de sensores electroquímicos de gases o sensores analógicos de CO2 mediante el microcontrolador."
             }
           ],
@@ -2068,10 +2069,11 @@ export const courseData = {
             }
           ],
           resources: [
-            { name: "Instrumentación_Gas.pptx", type: "pptx", size: "4.1 MB" },
-            { name: "Gas Sensors Based on Semiconductor Metal.pdf", type: "pdf", size: "5.2 MB" },
-            { name: "Application of electronic nose.pdf", type: "pdf", size: "1.2 MB" },
-            { name: "Advancements and Prospects of Electronic Nose.pdf", type: "pdf", size: "5.2 MB" }
+            { name: "Instrumentación_Gas.pdf", url: "./Segundo Corte/10 Clase/Instrumentación_Gas.pdf", type: "pdf", size: "1.5 MB" },
+            { name: "Instrumentación_Gas.pptx", url: "./Segundo Corte/10 Clase/Instrumentación_Gas.pptx", type: "pptx", size: "13.8 MB" },
+            { name: "Gas Sensors Based on Semiconductor Metal.pdf", url: "./Segundo Corte/10 Clase/Gas Sensors Based on Semiconductor Metal.pdf", type: "pdf", size: "5.2 MB" },
+            { name: "Application of electronic nose.pdf", url: "./Segundo Corte/10 Clase/Application of electronic nose.pdf", type: "pdf", size: "1.2 MB" },
+            { name: "Advancements and Prospects of Electronic Nose.pdf", url: "./Segundo Corte/10 Clase/Advancements and Prospects of Electronic Nose.pdf", type: "pdf", size: "5.2 MB" }
           ],
           quizzes: [
             {

@@ -363,7 +363,7 @@ export function renderCourseContentView(container, topicId, onAwardXp, onNavigat
 
   // Cache de codigos firmware para clases especificas
   const arduinoCodes = {
-    'clase-09': `// @file PruebaCelda.ino
+    'clase-08': `// @file PruebaCelda.ino
 // @description Lectura y calibracion de celda de carga con HX711
 #include "HX711.h"
 
@@ -387,6 +387,45 @@ void loop() {
   Serial.print(balanza.get_units(5), 2); // Promedio de 5 lecturas
   Serial.println(" kg");
   delay(500);
+}`,
+
+    'clase-09': `// @file Ultrasonido.ino
+// @description Medicion de nivel / distancia mediante sensor ultrasonico HC-SR04
+// Pines del sensor
+const int trigPin = 9;
+const int echoPin = 10;
+
+// Variables
+long duration;
+float distance;
+
+void setup() {
+  Serial.begin(9600);          // Comunicación serial
+  pinMode(trigPin, OUTPUT);    // TRIG como salida
+  pinMode(echoPin, INPUT);     // ECHO como entrada
+  Serial.println("Sensor ultrasónico listo...");
+}
+
+void loop() {
+  // Generar un pulso ultrasónico
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Medir la duración del eco
+  duration = pulseIn(echoPin, HIGH);
+
+  // Calcular distancia en cm
+  distance = (duration * 0.0343) / 2;
+
+  // Mostrar en monitor serial
+  Serial.print("Distancia: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  delay(500);  // Esperar medio segundo
 }`,
 
     'clase-11': ''
@@ -686,6 +725,18 @@ void loop() {
           } else if (simFile === 'laboratorio_virtual_filtros_ruido.html') {
             simTitle = 'Simulador Interactivo de Filtros y Ruido';
             simDesc = 'Experimente con filtros pasivos, observe la atenuación del ruido y analice el comportamiento de las bioseñales en el dominio del tiempo y frecuencia.';
+          } else if (simFile === 'gassense_lab_v2_materiales.html') {
+            simTitle = 'Laboratorio Virtual: Sensor de Gas MQ y Caracterización de Materiales';
+            simDesc = 'Simule la respuesta electroquímica y semiconductora de sensores de gas (como MQ-2, MQ-135), observe la variación de resistencia (Rs/Ro) y la curva de calibración en ppm.';
+          } else if (simFile === 'strainlab_fuerza_presion.html') {
+            simTitle = 'Laboratorio Virtual: Galgas Extensométricas y Deformación';
+            simDesc = 'Experimente con el puente de Wheatstone, deformación mecánica y acondicionamiento con amplificador de instrumentación.';
+          } else if (simFile === 'thermolab_instrumentacion_temperatura.html') {
+            simTitle = 'Laboratorio Virtual: Instrumentación de Temperatura';
+            simDesc = 'Simulación de sensores PT100, NTC y termopares mediante puente de Wheatstone.';
+          } else if (simFile === 'piezolab_bioinstrumentacion_v2.html') {
+            simTitle = 'Laboratorio Virtual: Transductores Piezoeléctricos y Bioseñales';
+            simDesc = 'Simule la respuesta en frecuencia y acondicionamiento de carga de transductores piezoeléctricos.';
           } else if (simFile === 'optobio_lab.html') {
             simTitle = 'Simulador de Instrumentación Optoelectrónica (PPG / SpO₂)';
             simDesc = 'Experimente con los fundamentos de la fotopletismografía: longitud de onda, transimpedancia y absorción de luz en los tejidos biológicos.';
