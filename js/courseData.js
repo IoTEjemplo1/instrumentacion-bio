@@ -2061,13 +2061,7 @@ export const courseData = {
               description: "Caracterización de sensores electroquímicos de gases o sensores analógicos de CO2 mediante el microcontrolador."
             }
           ],
-          code: [
-            {
-              filename: "Ultrasonido.ino",
-              path: "Segundo Corte/10 Clase/Ultrasonido/Ultrasonido.ino",
-              description: "Código para el cálculo de distancias por tiempo de vuelo aplicable a sensores de nivel en fluidos médicos."
-            }
-          ],
+          code: [],
           resources: [
             { name: "Instrumentación_Gas.pptx", url: "./Segundo Corte/10 Clase/Instrumentación_Gas.pptx", type: "pptx", size: "13.8 MB" },
             { name: "Gas Sensors Based on Semiconductor Metal.pdf", url: "./Segundo Corte/10 Clase/Gas Sensors Based on Semiconductor Metal.pdf", type: "pdf", size: "5.2 MB" },
