@@ -2069,7 +2069,6 @@ export const courseData = {
             }
           ],
           resources: [
-            { name: "Instrumentación_Gas.pdf", url: "./Segundo Corte/10 Clase/Instrumentación_Gas.pdf", type: "pdf", size: "1.5 MB" },
             { name: "Instrumentación_Gas.pptx", url: "./Segundo Corte/10 Clase/Instrumentación_Gas.pptx", type: "pptx", size: "13.8 MB" },
             { name: "Gas Sensors Based on Semiconductor Metal.pdf", url: "./Segundo Corte/10 Clase/Gas Sensors Based on Semiconductor Metal.pdf", type: "pdf", size: "5.2 MB" },
             { name: "Application of electronic nose.pdf", url: "./Segundo Corte/10 Clase/Application of electronic nose.pdf", type: "pdf", size: "1.2 MB" },
