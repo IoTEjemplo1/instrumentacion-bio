@@ -389,6 +389,39 @@ void loop() {
   delay(500);
 }`,
 
+    'clase-10': `// @file FrecuenciaC.ino
+// @description Adquisicion y calculo de frecuencia cardiaca (BPM) con sensor optico PulseSensor
+#include <PulseSensorPlayground.h>
+
+const int PulseWire = 0;  // Pin ANALOGICO A0 (cable morado)
+const int buzzer = 13;    // Pin para feedback auditivo de latidos
+int Threshold = 550;      // Umbral de deteccion del latido
+
+PulseSensorPlayground pulseSensor;
+
+void setup() {
+  Serial.begin(115200);
+  pulseSensor.analogInput(PulseWire);
+  pulseSensor.outputBeat(buzzer);
+  pulseSensor.setThreshold(Threshold);
+  pulseSensor.begin();
+}
+
+void loop() {
+  if (pulseSensor.sawStartOfBeat()) {
+    int myBPM = pulseSensor.getBeatsPerMinute();
+    Serial.println("♥ Se detecto un latido cardiaco!");
+    Serial.print("BPM: ");
+    Serial.println(myBPM);
+    pulseSensor.outputBeat();
+    tone(buzzer, 932);
+  }
+  if (!pulseSensor.isInsideBeat()) {
+    noTone(buzzer);
+  }
+  delay(20);
+}`,
+
     'clase-11': ''
   };
 

@@ -6,8 +6,8 @@
  * @author Antigravity Pair Programmer
  */
 
-import { courseData } from './courseData.js?v=68';
-import * as components from './components.js?v=3';
+import { courseData } from './courseData.js?v=69';
+import * as components from './components.js?v=4';
 
 // Estados globales de la aplicacion SPA
 const state = {
@@ -182,6 +182,15 @@ function renderSidebar() {
       }
     });
   });
+
+  // Auto-expandir el modulo correspondiente si hay una clase activa
+  if (state.activeTopicId) {
+    courseData.modules.forEach(mod => {
+      if (mod.topics.some(t => t.id === state.activeTopicId)) {
+        modulesExpanded[mod.id] = true;
+      }
+    });
+  }
 
   const classSensors = {
     "clase-01": { name: "Multímetro Digital", icon: "📟", tip: "Instrumento base para medir voltajes y verificar conexiones antes de medir bioseñales." },

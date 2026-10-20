@@ -2152,7 +2152,7 @@ export const courseData = {
       topics: [
         {
           id: "clase-10",
-          isEnabled: false,
+          isEnabled: true,
           number: 10,
           title: "Instrumentación Optoelectrónica y Pulsioximetría",
           duration: "4 horas",
@@ -2305,7 +2305,13 @@ export const courseData = {
             }
           ],
           simulator: "optobio_lab.html",
-          code: [],
+          code: [
+            {
+              filename: "FrecuenciaC.ino",
+              path: "Tercer Corte/10 Clase Opto/FrecuenciaC.ino",
+              description: "Código en Arduino para adquisición y cálculo de frecuencia cardíaca (BPM) con sensor óptico de pulso (PulseSensor)."
+            }
+          ],
           resources: [
             { name: "Advances and Challenges Associated.pdf", type: "pdf", size: "1.1 MB" },
             { name: "Photoplethysmography in Wearable Devices.pdf", type: "pdf", size: "2.6 MB" },

@@ -7,6 +7,8 @@ venv/
 # Archivos de sistema y editores
 .DS_Store
 Thumbs.db
+desktop.ini
+*.ini
 .vscode/
 .idea/
 
@@ -24,6 +26,7 @@ tmp/
 *.rar
 dist/
 build/
+You are more transparent than you think.mp4
 
 # Variables de entorno y secretos
 .env
