@@ -2183,6 +2183,25 @@ export const courseData = {
               <p>Este principio sustenta tecnologías como la fotopletismografía (PPG), pulsoximetría, espectrofotometría, colorimetría, sensores de turbidez y detectores ópticos. La presentación muestra precisamente esta transición desde el fotodiodo hasta aplicaciones biomédicas como la medición del pulso y la SpO₂.</p>
             </div>
 
+            <!-- Video TED-Ed Recomendado -->
+            <div class="content-section my-4">
+              <div class="card p-3 border" style="background: rgba(235, 33, 46, 0.04); border-color: rgba(235, 33, 46, 0.25) !important; border-radius: var(--radius-md);">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span style="font-size: 1.4rem;">🎬</span>
+                    <h4 class="h6 m-0 text-primary fw-bold">Video Introductorio: TED-Ed — You are more transparent than you think</h4>
+                  </div>
+                  <span class="badge" style="background: #e62b1e; color: #fff; font-size: 0.72rem; padding: 0.35rem 0.6rem;">TED-Ed • Sajan Saini</span>
+                </div>
+                <p class="small text-secondary mb-3">
+                  Explicación visual de cómo la luz y la fotónica integrada permiten atravesar los tejidos biológicos para realizar mediciones fisiológicas no invasivas, sentando las bases de la fotopletismografía (PPG) y la pulsioximetría (SpO₂).
+                </p>
+                <div style="position: relative; width: 100%; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
+                  <iframe src="https://www.youtube.com/embed/j7heZpuvu4U" title="You are more transparent than you think - TED-Ed" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"></iframe>
+                </div>
+              </div>
+            </div>
+
             <div class="content-section">
               <h3>📐 Principio fundamental: interacción luz–materia y Ley de Beer–Lambert</h3>
               <p>La idea central es que la intensidad de la radiación que atraviesa un medio disminuye debido a la interacción de la luz con las sustancias presentes:</p>
