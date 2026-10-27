@@ -6,8 +6,8 @@
  * @author Antigravity Pair Programmer
  */
 
-import { courseData } from './courseData.js?v=70';
-import * as components from './components.js?v=4';
+import { courseData } from './courseData.js?v=71';
+import * as components from './components.js?v=5';
 
 // Estados globales de la aplicacion SPA
 const state = {

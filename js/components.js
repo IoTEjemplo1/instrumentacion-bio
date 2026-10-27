@@ -359,7 +359,12 @@ export function renderCourseContentView(container, topicId, onAwardXp, onNavigat
 
   // Mapear carpetas fisicas de recursos locales
   const folderPrefix = currentModule.id === 1 ? 'Primer Corte/' : currentModule.id === 2 ? 'Segundo Corte/' : 'Tercer Corte/';
-  const classFolder = String(currentTopic.number).padStart(2, '0') + (currentTopic.number === 10 && currentModule.id === 3 ? ' Clase Opto/' : ' Clase/');
+  let classFolder = String(currentTopic.number).padStart(2, '0') + ' Clase/';
+  if (currentModule.id === 3) {
+    if (currentTopic.number === 10) classFolder = '10 Clase Opto/';
+    else if (currentTopic.number === 11) classFolder = '12 Clase/';
+    else if (currentTopic.number === 12) classFolder = '13 Clase/';
+  }
 
   // Cache de codigos firmware para clases especificas
   const arduinoCodes = {
@@ -422,7 +427,26 @@ void loop() {
   delay(20);
 }`,
 
-    'clase-11': ''
+    'clase-11': `// @file ECG_Click.ino
+// @description Adquisición y muestreo analógico de biopotenciales cardíacos con tarjeta ECG Click
+const int analogInPin = A0;  // Pin analógico conectado a la salida de ECG Click
+int sensorValue = 0;        // Variable para almacenar el valor digitalizado del sensor
+
+void setup() {
+  // Inicialización del puerto serie a 9600 baudios (compatible con Serial Plotter)
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Lectura del biopotencial cardíaco acondicionado (rango 0 a 1023)
+  sensorValue = analogRead(analogInPin);
+  
+  // Envío del valor para visualización del trazado ECG
+  Serial.println(sensorValue);
+  
+  // Período de muestreo (~30 ms para aprox. 33 Hz de tasa de refresco)
+  delay(30);
+}`
   };
 
   /**
@@ -734,6 +758,9 @@ void loop() {
           } else if (simFile === 'optobio_lab.html') {
             simTitle = 'Simulador de Instrumentación Optoelectrónica (PPG / SpO₂)';
             simDesc = 'Experimente con los fundamentos de la fotopletismografía: longitud de onda, transimpedancia y absorción de luz en los tejidos biológicos.';
+          } else if (simFile === 'ecg_biolab.html') {
+            simTitle = 'Laboratorio Virtual: Bioelectricidad e Instrumentación de ECG';
+            simDesc = 'Simule la adquisición de señales electrocardiográficas (ECG), derivaciones de Einthoven, amplificación diferencial, CMRR, pierna derecha activa (DRL) y estimación de frecuencia cardíaca (BPM).';
           } else if (simFile.includes('musiclab.chromeexperiments.com/spectrogram')) {
             simTitle = 'Espectrograma Interactivo (Tiempo y Frecuencia)';
             simDesc = 'Visualice el contenido de frecuencias en tiempo real usando el microfono o instrumentos.';

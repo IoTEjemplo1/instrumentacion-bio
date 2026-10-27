@@ -2407,12 +2407,20 @@ export const courseData = {
         },
         {
           id: "clase-11",
-          isEnabled: false,
+          isEnabled: true,
           number: 11,
           title: "Bioelectricidad e Instrumentación de ECG",
           duration: "4 horas",
           difficulty: "Avanzado",
-          objectives: [],
+          objectives: [
+            "Explicar el origen y las principales características de la señal electrocardiográfica (ECG) como biopotencial.",
+            "Identificar las etapas fundamentales de una cadena de adquisición de ECG: electrodos, protección, amplificación, filtrado, DRL, conversión ADC y visualización.",
+            "Analizar la función del amplificador de instrumentación y del rechazo de modo común (CMRR) en biopotenciales.",
+            "Reconocer las principales fuentes de ruido y artefactos presentes en una señal ECG y las estrategias utilizadas para reducirlos.",
+            "Adquirir y visualizar una señal ECG mediante la tarjeta embebida ECG Click y microcontrolador.",
+            "Estimar la frecuencia cardíaca a partir de la detección de complejos QRS/picos R y expresarla en BPM.",
+            "Aplicar criterios básicos de seguridad eléctrica durante la adquisición de biopotenciales en personas."
+          ],
           summary: "El estándar técnico de los biopotenciales. Diseño del front-end analógico para ECG, cálculo de amplificadores de instrumentación y mitigación de voltajes de modo común usando electrodos activos.",
           content: `
             <div class="content-section">
@@ -2587,8 +2595,16 @@ export const courseData = {
             }
           ],
           simulator: "ecg_biolab.html",
+          code: [
+            {
+              filename: "ECG_Click.ino",
+              path: "Tercer Corte/12 Clase/ECG_Click.ino",
+              description: "Código en Arduino para adquisición y muestreo analógico de biopotenciales cardíacos con tarjeta ECG Click."
+            }
+          ],
           resources: [
-            { name: "8_Instrumentación_bioelectricidad.pptx", type: "pptx", size: "4.8 MB" },
+            { name: "Instrumentación_bioelectricidad.pdf", type: "pdf", size: "3.1 MB" },
+            { name: "8_Instrumentación_bioelectricidad.pptx", type: "pptx", size: "39.8 MB" },
             { name: "Evaluating Dry Electrodes and Bioinstrumentation.pdf", type: "pdf", size: "3.3 MB", url: "public/Evaluating Dry Electrodes and Bioinstrumentation.pdf" },
             { name: "Recent_Advances_in_Analog_Front-End_Architectures_.pdf", type: "pdf", size: "3.3 MB", url: "public/Recent_Advances_in_Analog_Front-End_Architectures_.pdf" },
             { name: "Flexible dry electrodes for electrocardiographic.pdf", type: "pdf", size: "11.9 MB", url: "public/Flexible dry electrodes for electrocardiographic.pdf" }
