@@ -2603,7 +2603,6 @@ export const courseData = {
             }
           ],
           resources: [
-            { name: "Instrumentación_bioelectricidad.pdf", type: "pdf", size: "3.1 MB" },
             { name: "8_Instrumentación_bioelectricidad.pptx", type: "pptx", size: "39.8 MB" },
             { name: "Evaluating Dry Electrodes and Bioinstrumentation.pdf", type: "pdf", size: "3.3 MB", url: "public/Evaluating Dry Electrodes and Bioinstrumentation.pdf" },
             { name: "Recent_Advances_in_Analog_Front-End_Architectures_.pdf", type: "pdf", size: "3.3 MB", url: "public/Recent_Advances_in_Analog_Front-End_Architectures_.pdf" },
