@@ -2755,13 +2755,7 @@ export const courseData = {
           
           `,
           presentation: "https://docs.google.com/presentation/d/e/2PACX-1vQ820Vgts2LmFaB5r_TTFziwtRBOH2pIUUsqoD9JFzaEGdk-RDz8-uGF7w1mgWYSw/pubembed?start=false&loop=false&delayms=3000",
-          labs: [
-            {
-              title: "Laboratorio 11: Sensor de Humedad y Conductividad en Suelo",
-              guide: "ECG_Click.txt",
-              description: "Monitoreo avanzado e interfaz con sensores capacitivos para evitar corrosión galvánica en la medición de humedad."
-            }
-          ],
+          labs: [],
           resources: [
             { name: "10_Instrumentación_agro.pptx", type: "pptx", size: "3.2 MB" },
             { name: "The IoT and AI in Agriculture.pdf", type: "pdf", size: "1.9 MB", url: "public/The IoT and AI in Agriculture.pdf" },

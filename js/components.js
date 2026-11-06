@@ -6,7 +6,7 @@
  * @author Antigravity Pair Programmer
  */
 
-import { courseData } from './courseData.js?v=73';
+import { courseData } from './courseData.js?v=74';
 import { mountECGSimulator, mountEEGSimulator, mountEMGSimulator, mountSpO2Simulator } from './simulators.js';
 
 /**
