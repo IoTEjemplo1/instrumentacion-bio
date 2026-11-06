@@ -2679,7 +2679,7 @@ export const courseData = {
         },
         {
           id: "clase-12",
-          isEnabled: false,
+          isEnabled: true,
           number: 12,
           title: "Instrumentación Aplicada al Sector Agrícola y Avanzada",
           duration: "4 horas",
